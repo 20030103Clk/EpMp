@@ -1,0 +1,27 @@
+{
+  "pages": [
+    "pages/production/login/login",
+    "pages/production/home/home",
+    "pages/production/plan/plan",
+    "pages/production/execution/execution",
+    "pages/production/profile/profile",
+    "pages/production/quality/quality",
+    "pages/production/inventory/inventory",
+    "pages/production/management/management",
+    "pages/production/plans/plans",
+    "pages/production/record/record"
+  ],
+  "window": {
+    "pageOrientation": "portrait",
+    "navigationBarTitleText": "生产管理系统",
+    "navigationBarTextStyle": "white",
+    "navigationBarBackgroundColor": "#007AFF",
+    "backgroundColor": "#F8F8F8"
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "演示定位能力"
+    }
+  },
+  "usingComponents": {}
+}

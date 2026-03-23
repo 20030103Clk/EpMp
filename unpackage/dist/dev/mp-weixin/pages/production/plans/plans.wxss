@@ -1,0 +1,142 @@
+
+.container.data-v-50a79e4a {
+	padding: 20rpx;
+	background-color: #f5f5f5;
+	min-height: 100vh;
+}
+.header.data-v-50a79e4a {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 20rpx;
+	background-color: #fff;
+	border-radius: 10rpx;
+	margin-bottom: 20rpx;
+	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+.title.data-v-50a79e4a {
+	font-size: 36rpx;
+	font-weight: bold;
+	color: #333;
+}
+.filter-section.data-v-50a79e4a {
+	padding: 20rpx;
+	background-color: #fff;
+	border-radius: 10rpx;
+	margin-bottom: 20rpx;
+	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+.filter-item.data-v-50a79e4a {
+	display: flex;
+	align-items: center;
+	margin-bottom: 15rpx;
+}
+.filter-item.data-v-50a79e4a:last-child {
+	margin-bottom: 0;
+}
+.filter-label.data-v-50a79e4a {
+	font-size: 28rpx;
+	color: #666;
+	margin-right: 20rpx;
+}
+.filter-options.data-v-50a79e4a {
+	display: flex;
+	gap: 15rpx;
+}
+.filter-option.data-v-50a79e4a {
+	padding: 8rpx 16rpx;
+	font-size: 24rpx;
+	color: #8e8e93;
+	background-color: #f0f0f0;
+	border-radius: 20rpx;
+	cursor: pointer;
+	transition: all 0.3s;
+}
+.filter-option.active.data-v-50a79e4a {
+	background-color: #007aff;
+	color: #fff;
+}
+.order-list.data-v-50a79e4a {
+	display: flex;
+	flex-direction: column;
+	gap: 20rpx;
+}
+.order-item.data-v-50a79e4a {
+	background-color: #fff;
+	border-radius: 10rpx;
+	padding: 20rpx;
+	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+.order-header.data-v-50a79e4a {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 15rpx;
+	padding-bottom: 15rpx;
+	border-bottom: 1rpx solid #f0f0f0;
+}
+.order-id.data-v-50a79e4a {
+	font-size: 30rpx;
+	font-weight: bold;
+	color: #333;
+}
+.order-status.data-v-50a79e4a {
+	font-size: 24rpx;
+	padding: 4rpx 12rpx;
+	border-radius: 15rpx;
+	font-weight: bold;
+}
+.order-status.pending.data-v-50a79e4a {
+	background-color: #f0f0f0;
+	color: #8e8e93;
+}
+.order-status.processing.data-v-50a79e4a {
+	background-color: #e8f0fe;
+	color: #007aff;
+}
+.order-status.completed.data-v-50a79e4a {
+	background-color: #e8f8f5;
+	color: #4cd964;
+}
+.order-status.cancelled.data-v-50a79e4a {
+	background-color: #ffebee;
+	color: #ff2d55;
+}
+.order-content.data-v-50a79e4a {
+	margin-bottom: 15rpx;
+}
+.content-row.data-v-50a79e4a {
+	display: flex;
+	margin-bottom: 12rpx;
+	align-items: center;
+}
+.content-row.data-v-50a79e4a:last-child {
+	margin-bottom: 0;
+}
+.label.data-v-50a79e4a {
+	font-size: 26rpx;
+	color: #666;
+	width: 150rpx;
+}
+.value.data-v-50a79e4a {
+	font-size: 26rpx;
+	color: #333;
+	flex: 1;
+}
+.order-actions.data-v-50a79e4a {
+	display: flex;
+	justify-content: flex-end;
+	padding-top: 15rpx;
+	border-top: 1rpx solid #f0f0f0;
+}
+.no-orders.data-v-50a79e4a {
+	background-color: #fff;
+	border-radius: 10rpx;
+	padding: 40rpx;
+	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+	text-align: center;
+}
+.no-orders-text.data-v-50a79e4a {
+	font-size: 28rpx;
+	color: #8e8e93;
+}

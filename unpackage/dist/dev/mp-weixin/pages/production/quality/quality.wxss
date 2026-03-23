@@ -1,0 +1,307 @@
+
+.container.data-v-fa3ada11 {
+	padding: 20rpx;
+	background-color: #f5f5f5;
+	min-height: 100vh;
+}
+.header.data-v-fa3ada11 {
+	padding: 20rpx;
+	background-color: #fff;
+	border-radius: 10rpx;
+	margin-bottom: 20rpx;
+	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+.title.data-v-fa3ada11 {
+	font-size: 36rpx;
+	font-weight: bold;
+	color: #333;
+}
+.quality-stats.data-v-fa3ada11 {
+	display: flex;
+	gap: 20rpx;
+	margin-bottom: 20rpx;
+}
+.stat-card.data-v-fa3ada11 {
+	flex: 1;
+	background-color: #fff;
+	border-radius: 10rpx;
+	padding: 20rpx;
+	text-align: center;
+	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+.stat-title.data-v-fa3ada11 {
+	font-size: 24rpx;
+	color: #666;
+	margin-bottom: 10rpx;
+}
+.stat-value.data-v-fa3ada11 {
+	font-size: 48rpx;
+	font-weight: bold;
+	color: #007aff;
+	margin-bottom: 8rpx;
+}
+.stat-unit.data-v-fa3ada11 {
+	font-size: 24rpx;
+	color: #8e8e93;
+	margin-left: 8rpx;
+}
+.stat-trend.data-v-fa3ada11 {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 5rpx;
+	margin-top: 8rpx;
+}
+.trend-text.data-v-fa3ada11 {
+	font-size: 20rpx;
+	color: #4cd964;
+}
+.trend-icon.data-v-fa3ada11 {
+	font-size: 20rpx;
+	color: #4cd964;
+	font-weight: bold;
+}
+.section-header.data-v-fa3ada11 {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20rpx;
+}
+.section-title.data-v-fa3ada11 {
+	font-size: 32rpx;
+	font-weight: bold;
+	color: #333;
+}
+.more.data-v-fa3ada11 {
+	font-size: 24rpx;
+	color: #007aff;
+	cursor: pointer;
+}
+.inspection-section.data-v-fa3ada11 {
+	background-color: #fff;
+	border-radius: 10rpx;
+	padding: 20rpx;
+	margin-bottom: 20rpx;
+	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+.inspection-list.data-v-fa3ada11 {
+	display: flex;
+	flex-direction: column;
+	gap: 15rpx;
+}
+.inspection-item.data-v-fa3ada11 {
+	background-color: #f9f9f9;
+	border-radius: 8rpx;
+	padding: 15rpx;
+}
+.inspection-header.data-v-fa3ada11 {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 12rpx;
+}
+.inspection-id.data-v-fa3ada11 {
+	font-size: 28rpx;
+	font-weight: bold;
+	color: #333;
+}
+.inspection-result.data-v-fa3ada11 {
+	font-size: 24rpx;
+	padding: 4rpx 12rpx;
+	border-radius: 15rpx;
+	font-weight: bold;
+}
+.inspection-result.pass.data-v-fa3ada11 {
+	background-color: #e8f8f5;
+	color: #4cd964;
+}
+.inspection-result.fail.data-v-fa3ada11 {
+	background-color: #ffebee;
+	color: #ff2d55;
+}
+.inspection-content.data-v-fa3ada11 {
+				display: flex;
+				flex-direction: column;
+				gap: 10rpx;
+				margin-bottom: 15rpx;
+}
+.inspection-actions.data-v-fa3ada11 {
+				display: flex;
+				justify-content: flex-end;
+				margin-top: 10rpx;
+}
+.delete-btn.data-v-fa3ada11 {
+				padding: 8rpx 16rpx;
+				background-color: #ff2d55;
+				color: #fff;
+				border: none;
+				border-radius: 10rpx;
+				font-size: 22rpx;
+				cursor: pointer;
+				transition: all 0.3s;
+				width: 100%;
+}
+.delete-btn.data-v-fa3ada11:hover {
+				opacity: 0.8;
+}
+.content-row.data-v-fa3ada11 {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+}
+.label.data-v-fa3ada11 {
+	font-size: 24rpx;
+	color: #666;
+	width: 120rpx;
+}
+.value.data-v-fa3ada11 {
+	font-size: 24rpx;
+	color: #333;
+	flex: 1;
+}
+.defect-tags.data-v-fa3ada11 {
+	display: flex;
+	gap: 8rpx;
+	flex-wrap: wrap;
+	flex: 1;
+}
+.defect-tag.data-v-fa3ada11 {
+	font-size: 22rpx;
+	padding: 4rpx 10rpx;
+	background-color: #ffebee;
+	color: #ff2d55;
+	border-radius: 12rpx;
+}
+.quality-actions.data-v-fa3ada11 {
+	/*display: flex;
+	gap: 15rpx;*/
+	position: fixed; /* 固定定位核心属性，必加 */
+  	top: 86%;      /* 距离屏幕顶部的距离 */
+    left: 20rpx;     /* 距离屏幕左侧的距离 */
+  /* 可选补充，必加！防止被遮挡+样式错乱 */
+  	background: #fff;/* 加白色背景，防止和下方内容重叠穿透 */
+    bottom: 0; left: 0; width: 100%;
+}
+.action-btn.data-v-fa3ada11 {
+	flex: 1;
+	padding: 20rpx;
+	background-color: #007aff;
+	color: #fff;
+	border: none;
+	border-radius: 10rpx;
+	font-size: 28rpx;
+	font-weight: bold;
+	cursor: pointer;
+	transition: all 0.3s;
+}
+.action-btn.secondary.data-v-fa3ada11 {
+	background-color: #fff;
+	color: #007aff;
+	border: 1rpx solid #007aff;
+}
+.action-btn.data-v-fa3ada11:hover {
+	opacity: 0.8;
+}
+
+/* 弹出层样式 */
+.simple-popup.data-v-fa3ada11 {
+	background-color: #fff;
+	border-radius: 10rpx;
+	width: 500rpx;
+	max-width: 90vw;
+}
+.simple-popup .popup-title.data-v-fa3ada11 {
+	font-size: 28rpx;
+	font-weight: bold;
+	color: #333;
+	padding: 20rpx;
+	text-align: center;
+	border-bottom: 1rpx solid #eee;
+}
+.simple-popup .popup-content.data-v-fa3ada11 {
+	padding: 20rpx;
+}
+.simple-popup .form-item.data-v-fa3ada11 {
+	margin-bottom: 20rpx;
+}
+.simple-popup .form-label.data-v-fa3ada11 {
+	display: block;
+	font-size: 24rpx;
+	color: #666;
+	margin-bottom: 8rpx;
+}
+.simple-popup .form-input.data-v-fa3ada11 {
+	width: 100%;
+	padding: 16rpx;
+	border: 1rpx solid #ddd;
+	border-radius: 6rpx;
+	font-size: 26rpx;
+	box-sizing: border-box;
+}
+.simple-popup radio-group.data-v-fa3ada11 {
+	display: flex;
+	gap: 30rpx;
+	padding: 10rpx 0;
+}
+.simple-popup radio-group label.data-v-fa3ada11 {
+	display: flex;
+	align-items: center;
+	font-size: 26rpx;
+}
+.simple-popup .popup-buttons.data-v-fa3ada11 {
+	display: flex;
+	border-top: 1rpx solid #eee;
+}
+.simple-popup .popup-buttons button.data-v-fa3ada11 {
+	flex: 1;
+	padding: 20rpx;
+	border: none;
+	font-size: 26rpx;
+}
+.simple-popup .popup-buttons button.data-v-fa3ada11:first-child {
+	border-right: 1rpx solid #eee;
+	color: #666;
+}
+.simple-popup .popup-buttons button.data-v-fa3ada11:last-child {
+	color: #666;
+	background-color: #f8f9fa;
+}
+.simple-popup .popup-buttons .report-close-btn.data-v-fa3ada11 {
+	color: #6c757d;
+	background-color: #f8f9fa;
+	border: 1rpx solid #dee2e6;
+}
+
+/* 报告样式 */
+.report-label.data-v-fa3ada11 {
+	display: block;
+	font-size: 24rpx;
+	color: #666;
+	margin-bottom: 8rpx;
+}
+.report-value.data-v-fa3ada11 {
+	display: block;
+	font-size: 26rpx;
+	color: #333;
+}
+.report-value.highlight.data-v-fa3ada11 {
+	color: #007aff;
+	font-weight: bold;
+}
+.defect-list.data-v-fa3ada11 {
+	margin-top: 8rpx;
+}
+.defect-item.data-v-fa3ada11 {
+	display: block;
+	font-size: 24rpx;
+	color: #666;
+	margin-bottom: 6rpx;
+	padding-left: 20rpx;
+	position: relative;
+}
+.defect-item.data-v-fa3ada11::before {
+	content: "•";
+	position: absolute;
+	left: 8rpx;
+	color: #007aff;
+}

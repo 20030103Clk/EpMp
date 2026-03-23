@@ -1,0 +1,135 @@
+
+.container.data-v-ade5d05f {
+	padding: 20rpx;
+	background-color: #f5f5f5;
+	min-height: 100vh;
+}
+.header.data-v-ade5d05f {
+	padding: 20rpx;
+	background-color: #fff;
+	border-radius: 10rpx;
+	margin-bottom: 20rpx;
+	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+.title.data-v-ade5d05f {
+	font-size: 36rpx;
+	font-weight: bold;
+	color: #333;
+}
+.setting-section.data-v-ade5d05f {
+	background-color: #fff;
+	border-radius: 10rpx;
+	padding: 20rpx;
+	margin-bottom: 20rpx;
+	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+.section-title.data-v-ade5d05f {
+	font-size: 28rpx;
+	font-weight: bold;
+	color: #333;
+	margin-bottom: 15rpx;
+}
+.setting-list.data-v-ade5d05f {
+	display: flex;
+	flex-direction: column;
+}
+.setting-item.data-v-ade5d05f {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 20rpx 0;
+	border-bottom: 1rpx solid #f0f0f0;
+	cursor: pointer;
+	transition: background-color 0.3s;
+}
+.setting-item.data-v-ade5d05f:last-child {
+	border-bottom: none;
+}
+.setting-item.data-v-ade5d05f:hover {
+	background-color: #f9f9f9;
+}
+.item-text.data-v-ade5d05f {
+	font-size: 28rpx;
+	color: #333;
+}
+.item-value.data-v-ade5d05f {
+	font-size: 26rpx;
+	color: #8e8e93;
+	margin-right: 10rpx;
+}
+.item-arrow.data-v-ade5d05f {
+	font-size: 28rpx;
+	color: #8e8e93;
+	font-weight: bold;
+}
+.user-info-section.data-v-ade5d05f {
+		background-color: #fff;
+		border-radius: 10rpx;
+		padding: 40rpx;
+		margin-bottom: 20rpx;
+		box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+		display: flex;
+		align-items: center;
+		gap: 20rpx;
+}
+.user-avatar.data-v-ade5d05f {
+		width: 120rpx;
+		height: 120rpx;
+		background-color: #007aff;
+		border-radius: 50%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+}
+.avatar-text.data-v-ade5d05f {
+		font-size: 48rpx;
+		color: #fff;
+		font-weight: bold;
+}
+.user-details.data-v-ade5d05f {
+		flex: 1;
+}
+.user-name.data-v-ade5d05f {
+		font-size: 32rpx;
+		font-weight: bold;
+		color: #333;
+		margin-bottom: 8rpx;
+		display: block;
+}
+.user-role.data-v-ade5d05f {
+		font-size: 24rpx;
+		color: #8e8e93;
+		display: block;
+}
+.logout-section.data-v-ade5d05f {
+		margin-top: 30rpx;
+		padding: 0 20rpx;
+}
+.logout-btn.data-v-ade5d05f {
+		width: 100%;
+		padding: 20rpx;
+		background-color: #ff2d55;
+		color: #fff;
+		border: none;
+		border-radius: 10rpx;
+		font-size: 28rpx;
+		font-weight: bold;
+		cursor: pointer;
+		transition: all 0.3s;
+}
+.logout-btn.data-v-ade5d05f:hover {
+		opacity: 0.8;
+}
+.popup-content.data-v-ade5d05f {
+		width: 600rpx;
+		background-color: #fff;
+		border-radius: 10rpx;
+		padding: 20rpx;
+}
+.icon-left.data-v-ade5d05f{
+			/*icon放右边*/
+			position: absolute;
+			top: 30rpx;
+			left: 91%;
+			transform: translateY(-50%);
+}

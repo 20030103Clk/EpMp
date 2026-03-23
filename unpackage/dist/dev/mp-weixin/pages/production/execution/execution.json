@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "工序进度",
+  "usingComponents": {
+    "uni-popup": "../../../uni_modules/uni-popup/components/uni-popup/uni-popup"
+  }
+}
