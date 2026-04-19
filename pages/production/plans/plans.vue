@@ -60,49 +60,26 @@
 </template>
 
 <script>
+const API_BASE_URL = 'http://localhost:3000/api';
+
+const api = {
+  plan: {
+    getPlans: async (params = {}) => {
+      const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+      const response = await uni.request({
+        url: `${API_BASE_URL}/plan${queryString ? `?${queryString}` : ''}`,
+        method: 'GET'
+      });
+      return response[1].data;
+    }
+  }
+};
 export default {
 	data() {
 		return {
 			selectedStatus: 'all',
 			selectedTime: 'week',
-			orders: [
-				{
-					id: 'O001',
-					product: '产品A',
-					quantity: 500,
-					orderDate: '2026-01-19',
-					deliveryDate: '2026-01-23',
-					status: 'processing',
-					statusText: '生产中',
-				},
-				{
-					id: 'O002',
-					product: '产品B',
-					quantity: 300,
-					orderDate: '2026-01-18',
-					deliveryDate: '2026-01-22',
-					status: 'pending',
-					statusText: '待生产',
-				},
-				{
-					id: 'O003',
-					product: '产品C',
-					quantity: 800,
-					orderDate: '2026-01-17',
-					deliveryDate: '2026-01-21',
-					status: 'completed',
-					statusText: '已完成',
-				},
-				{
-					id: 'O004',
-					product: '产品E',
-					quantity: 600,
-					orderDate: '2026-01-15',
-					deliveryDate: '2026-01-19',
-					status: 'completed',
-					statusText: '已完成',
-				}
-			]
+			orders: []
 		};
 	},
 	computed: {
@@ -137,10 +114,34 @@ export default {
 			return filtered.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
 		}
 	},
+	onLoad() {
+		this.loadOrders();
+	},
 	methods: {
-
+		loadOrders() {
+			uni.showLoading({ title: '加载中...' });
+			api.plan.getPlans().then(res => {
+				uni.hideLoading();
+				if (res.success) {
+					this.orders = res.data.list.map(plan => ({
+						id: plan.plan_id,
+						product: plan.product,
+						quantity: plan.quantity,
+						orderDate: plan.start_date,
+						deliveryDate: plan.end_date,
+						status: plan.status,
+						statusText: plan.statusText
+					}));
+				} else {
+					uni.showToast({ title: '加载失败', icon: 'none' });
+				}
+			}).catch(error => {
+				uni.hideLoading();
+				uni.showToast({ title: '网络错误', icon: 'none' });
+			});
+		}
 	}
-};
+}
 </script>
 
 <style scoped>

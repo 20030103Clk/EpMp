@@ -41,6 +41,66 @@
 </template>
 
 <script>
+const API_BASE_URL = 'http://localhost:3000/api';
+
+const api = {
+  user: {
+    login: async (data) => {
+      try {
+        const response = await uni.request({
+          url: `${API_BASE_URL}/user/login`,
+          method: 'POST',
+          data: JSON.stringify(data),
+          header: {
+            'Content-Type': 'application/json'
+          }
+        });
+        console.log('Login API response:', response);
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        console.error('Login error:', error);
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    },
+    register: async (data) => {
+      try {
+        const response = await uni.request({
+          url: `${API_BASE_URL}/user/register`,
+          method: 'POST',
+          data: JSON.stringify(data),
+          header: {
+            'Content-Type': 'application/json'
+          }
+        });
+        console.log('Register API response:', response);
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        console.error('Register error:', error);
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    }
+  }
+};
 export default {
 	data() {
 		return {
@@ -74,36 +134,56 @@ export default {
 			return true;
 		},
 		handleLogin() {
-			if (!this.validateForm()) {
-				return;
+		if (!this.validateForm()) {
+			return;
+		}
+		
+		this.loading = true;
+		// === API调用 ===
+		api.user.login({
+			name: this.form.username,
+			pass: this.form.password
+		}).then(res => {
+			console.log('Login response:', res);
+			if (res && res.success) {
+				uni.setStorageSync('userInfo', {
+					username: res.data.user.name,
+					level: res.data.user.remark
+				});
+				uni.setStorageSync('token', res.data.token);
+				uni.reLaunch({ url: '/pages/production/home/home' });
+			} else {
+				this.errorMsg = res ? res.message : '登录失败，请稍后重试';
+				this.loading = false;
 			}
+		}).catch(error => {
+			console.error('Login error:', error);
+			this.errorMsg = '登录失败，请检查用户名和密码';
+			this.loading = false;
+		});
+		// 模拟登录请求
+		/*setTimeout(() => {
+			// 从本地存储获取用户列表
+			const users = uni.getStorageSync('users') || [];
 			
-			this.loading = true;
-			//直接登录
-			uni.reLaunch({ url: '/pages/production/home/home' });
-			// 模拟登录请求
-			/*setTimeout(() => {
-				// 从本地存储获取用户列表
-				const users = uni.getStorageSync('users') || [];
-				
-				// 查找匹配的用户
-				const matchedUser = users.find(user => 
-					user.name === this.form.username && user.pass === this.form.password
-				);
-				
-				//if (matchedUser) {
-				if (ture) {
-					uni.setStorageSync('userInfo', {
-						username: matchedUser.name,
-						level: matchedUser.level
-					});
+			// 查找匹配的用户
+			const matchedUser = users.find(user => 
+				user.name === this.form.username && user.pass === this.form.password
+			);
+			
+			//if (matchedUser) {
+			if (ture) {
+				uni.setStorageSync('userInfo', {
+					username: matchedUser.name,
+					level: matchedUser.level
+				});
 
-					uni.reLaunch({ url: '/pages/production/home/home' });
-				} else {
-					this.errorMsg = '用户名或密码错误';
-					this.loading = false;
-				}
-			}, 1500);*/
+				uni.reLaunch({ url: '/pages/production/home/home' });
+			} else {
+				this.errorMsg = '用户名或密码错误';
+				this.loading = false;
+			}
+		}, 1500);*/
 		},
 		open(){
         	this.$refs.popup.open('center');
@@ -120,42 +200,70 @@ export default {
 			this.newform.confirmPassword = '';
 		},
 		opclose(){
-			if (this.newform.name === '' || this.newform.pass === '' || this.newform.confirmPassword === '') {
-				this.errorMsg = '请填写完整的注册信息';
-				return;
-			} 
-			if(this.newform.pass !== this.newform.confirmPassword){
-				this.errorMsg = '两次密码输入不一致';
-				return;
-			}			
-			// 从本地存储获取现有用户列表
-			const existingUsers = uni.getStorageSync('users') || [];
-			
-			// 检查用户名是否已存在
-			const isUsernameExists = existingUsers.some(user => user.name === this.newform.name);
-			if (isUsernameExists) {
-				this.errorMsg = '用户名已存在';
-				return;
+		if (this.newform.name === '' || this.newform.pass === '' || this.newform.confirmPassword === '') {
+			this.errorMsg = '请填写完整的注册信息';
+			return;
+		} 
+		if(this.newform.pass !== this.newform.confirmPassword){
+			this.errorMsg = '两次密码输入不一致';
+			return;
+		}
+		// === API调用 ===
+		api.user.register({
+			name: this.newform.name,
+			pass: this.newform.pass,
+			remark: 0
+		}).then(res => {
+			console.log('Register response:', res);
+			if (res && res.success) {
+				uni.setStorageSync('userInfo', { username: this.newform.name });
+				this.user.name = this.newform.name;
+				this.user.pass = this.newform.pass;
+				this.close();
+				uni.showToast({
+					title: '注册成功',
+					icon: 'success'
+				});
+			} else {
+				this.errorMsg = res ? res.message : '注册失败，请稍后重试';
 			}
-			
-			// 创建新用户
-			const newUser = {
-				name: this.newform.name,
-				pass: this.newform.pass,
-				level: 0 // 默认普通用户
-			};
-			
-			// 添加到用户列表
-			existingUsers.push(newUser);
-			uni.setStorageSync('users', existingUsers);
-			uni.setStorageSync('userInfo', { username: this.newform.name });
-			this.user.name = this.newform.name;
-			this.user.pass = this.newform.pass;
-			this.close();
-			uni.showToast({
-				title: '注册成功',
-				icon: 'success'
-			});
+		}).catch(error => {
+			console.error('Register error:', error);
+			// 处理 409 错误（用户名已存在）
+			if (error && error.statusCode === 409) {
+				this.errorMsg = '用户名已存在';
+			} else {
+				this.errorMsg = '注册失败，请稍后重试';
+			}
+		});
+		// 从本地存储获取现有用户列表
+		/*const existingUsers = uni.getStorageSync('users') || [];
+		
+		// 检查用户名是否已存在
+		const isUsernameExists = existingUsers.some(user => user.name === this.newform.name);
+		if (isUsernameExists) {
+			this.errorMsg = '用户名已存在';
+			return;
+		}
+		
+		// 创建新用户
+		const newUser = {
+			name: this.newform.name,
+			pass: this.newform.pass,
+			level: 0 // 默认普通用户
+		};
+		
+		// 添加到用户列表
+		existingUsers.push(newUser);
+		uni.setStorageSync('users', existingUsers);
+		uni.setStorageSync('userInfo', { username: this.newform.name });
+		this.user.name = this.newform.name;
+		this.user.pass = this.newform.pass;
+		this.close();
+		uni.showToast({
+			title: '注册成功',
+			icon: 'success'
+		});*/
 		}
 	}
 };

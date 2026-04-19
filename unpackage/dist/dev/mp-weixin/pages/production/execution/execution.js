@@ -1,65 +1,147 @@
 "use strict";
 const common_vendor = require("../../../common/vendor.js");
+const API_BASE_URL = "http://localhost:3000/api";
+const api = {
+  equipment: {
+    getEquipments: async (params = {}) => {
+      try {
+        const queryString = Object.keys(params).map((key) => `${key}=${params[key]}`).join("&");
+        const response = await common_vendor.index.request({
+          url: `${API_BASE_URL}/equipment${queryString ? `?${queryString}` : ""}`,
+          method: "GET"
+        });
+        if (response && (response[1] || response.data)) {
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error("Invalid response from server");
+      } catch (error) {
+        throw error;
+      }
+    }
+  },
+  plan: {
+    getPlans: async (params = {}) => {
+      try {
+        const queryString = Object.keys(params).map((key) => `${key}=${params[key]}`).join("&");
+        const response = await common_vendor.index.request({
+          url: `${API_BASE_URL}/plan${queryString ? `?${queryString}` : ""}`,
+          method: "GET"
+        });
+        if (response && (response[1] || response.data)) {
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error("Invalid response from server");
+      } catch (error) {
+        throw error;
+      }
+    },
+    updatePlan: async (id, data) => {
+      try {
+        const response = await common_vendor.index.request({
+          url: `${API_BASE_URL}/plan/${id}`,
+          method: "PUT",
+          data,
+          header: {
+            "Content-Type": "application/json; charset=utf-8"
+          }
+        });
+        if (response && (response[1] || response.data)) {
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error("Invalid response from server");
+      } catch (error) {
+        throw error;
+      }
+    }
+  },
+  record: {
+    createRecord: async (data) => {
+      try {
+        const response = await common_vendor.index.request({
+          url: `${API_BASE_URL}/record`,
+          method: "POST",
+          data,
+          header: {
+            "Content-Type": "application/json; charset=utf-8"
+          }
+        });
+        if (response && (response[1] || response.data)) {
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error("Invalid response from server");
+      } catch (error) {
+        throw error;
+      }
+    }
+  },
+  quality: {
+    createQuality: async (data) => {
+      try {
+        const response = await common_vendor.index.request({
+          url: `${API_BASE_URL}/quality`,
+          method: "POST",
+          data,
+          header: {
+            "Content-Type": "application/json; charset=utf-8"
+          }
+        });
+        if (response && (response[1] || response.data)) {
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error("Invalid response from server");
+      } catch (error) {
+        throw error;
+      }
+    }
+  }
+};
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 const _sfc_main = {
   name: "ExecutionPage",
   computed: {
-    // 运行中的设备列表
-    runningDevices() {
-      return this.devices.filter((device) => device.status === "running");
+    // 所有设备列表（用于选择）
+    allDevices() {
+      return this.devices;
     }
   },
   data() {
-    const productionPlans = [
-      { id: "P001", product: "产品A", quantity: 500, startDate: "2026-01-11", endDate: "2026-01-15", status: "processing", statusText: "生产中", progress: 60 },
-      { id: "P002", product: "产品B", quantity: 300, startDate: "2026-01-12", endDate: "2026-01-16", status: "pending", statusText: "待生产", progress: 0 },
-      { id: "P003", product: "产品C", quantity: 800, startDate: "2026-01-10", endDate: "2026-01-14", status: "completed", statusText: "已完成", progress: 100 },
-      { id: "P004", product: "产品D", quantity: 200, startDate: "2026-01-11", endDate: "2026-01-13", status: "processing", statusText: "生产中", progress: 85 },
-      { id: "P005", product: "产品E", quantity: 600, startDate: "2026-01-13", endDate: "2026-01-17", status: "pending", statusText: "待生产", progress: 0 }
-    ];
-    const processingPlans = productionPlans.filter((plan) => plan.status === "processing");
-    const totalPlanQuantity = processingPlans.reduce((sum, plan) => sum + plan.quantity, 0);
-    const totalCompleted = processingPlans.reduce((sum, plan) => sum + plan.quantity * plan.progress / 100, 0);
     return {
       // 实时生产数据（基于生产计划计算）
       realtimeData: {
-        currentProduction: Math.round(totalCompleted),
-        productionEfficiency: totalCompleted / 8,
-        dailyTarget: totalPlanQuantity,
-        completionRate: Math.round(totalCompleted / totalPlanQuantity * 100) || 0
+        currentProduction: 0,
+        productionEfficiency: 0,
+        dailyTarget: 0,
+        completionRate: 0
       },
       // 生产任务列表（与生产计划对应）
-      productionTasks: productionPlans.map((plan) => ({
-        id: plan.id,
-        name: plan.product,
-        planQuantity: plan.quantity,
-        completedQuantity: Math.round(plan.quantity * plan.progress / 100),
-        status: plan.status,
-        statusText: plan.statusText
-      })),
+      productionTasks: [],
       // 设备状态信息
-      devices: [
-        {
-          id: 1,
-          name: "生产线1",
-          status: "running",
-          statusText: "运行中",
-          params: "产品A"
-        },
-        {
-          id: 2,
-          name: "生产线2",
-          status: "running",
-          statusText: "运行中",
-          params: "产品D"
-        },
-        {
-          id: 3,
-          name: "生产线3",
-          status: "idle",
-          statusText: "待机中",
-          params: "准备生产产品B"
-        }
-      ],
+      devices: [],
       // 上报产量表单数据
       selectedTask: null,
       outputForm: {
@@ -78,16 +160,52 @@ const _sfc_main = {
   methods: {
     // 初始化数据
     initData() {
-      const savedPlans = common_vendor.index.getStorageSync("productionPlan");
-      if (savedPlans && savedPlans.length > 0) {
-        common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:240", "已加载保存的生产计划:", savedPlans);
-      }
+      this.loadDevices();
+      this.loadProductionPlans();
+    },
+    // 加载设备列表
+    loadDevices() {
+      api.equipment.getEquipments().then((res) => {
+        common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:343", "设备列表响应:", res);
+        if (res && res.success && res.data && res.data.list) {
+          this.devices = res.data.list.map((equip) => ({
+            id: equip.equioment_id,
+            name: equip.equio,
+            status: equip.status === "运行中" || equip.status === "运行" ? "running" : "idle",
+            statusText: equip.status,
+            params: equip.statusText || "正常运行"
+          }));
+          common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:352", "设备列表已加载:", this.devices);
+        }
+      }).catch((error) => {
+        common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:355", "加载设备列表失败:", error);
+      });
+    },
+    // 加载生产计划
+    loadProductionPlans() {
+      api.plan.getPlans().then((res) => {
+        common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:362", "生产计划响应:", res);
+        if (res && res.success && res.data && res.data.list) {
+          this.productionTasks = res.data.list.map((plan) => ({
+            id: plan.plan_id,
+            name: plan.product,
+            planQuantity: plan.quantity,
+            completedQuantity: Math.round(plan.quantity * plan.progress / 100),
+            status: plan.status,
+            statusText: plan.statusText
+          }));
+          common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:372", "生产计划已加载:", this.productionTasks);
+          this.calculateRealtimeData();
+        }
+      }).catch((error) => {
+        common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:377", "加载生产计划失败:", error);
+      });
     },
     // 设备选择变更
     onEquipmentChange(e) {
       this.equipmentIndex = e.detail.value;
-      if (this.runningDevices[this.equipmentIndex]) {
-        this.outputForm.equipmentId = this.runningDevices[this.equipmentIndex].id;
+      if (this.allDevices[this.equipmentIndex]) {
+        this.outputForm.equipmentId = this.allDevices[this.equipmentIndex].name;
       }
     },
     // 报告异常
@@ -104,7 +222,7 @@ const _sfc_main = {
       this.outputForm = {
         quantity: 0,
         rejectQuantity: 0,
-        equipmentId: this.runningDevices.length > 0 ? this.runningDevices[0].id : "",
+        equipmentId: this.allDevices.length > 0 ? this.allDevices[0].name : "",
         remark: ""
       };
       this.equipmentIndex = 0;
@@ -125,49 +243,73 @@ const _sfc_main = {
         common_vendor.index.showToast({ title: "请选择生产设备", icon: "none" });
         return;
       }
-      const taskIndex = this.productionTasks.findIndex((t) => t.id === this.selectedTask.id);
-      if (taskIndex !== -1) {
-        this.productionTasks[taskIndex].completedQuantity += this.outputForm.quantity;
-        if (this.productionTasks[taskIndex].completedQuantity > this.productionTasks[taskIndex].planQuantity) {
-          this.productionTasks[taskIndex].completedQuantity = this.productionTasks[taskIndex].planQuantity;
+      common_vendor.index.showLoading({ title: "提交中..." });
+      const qualified = this.outputForm.quantity - this.outputForm.rejectQuantity;
+      const userInfo = common_vendor.index.getStorageSync("userInfo");
+      const username = userInfo && userInfo.username ? userInfo.username : "默认用户";
+      api.record.createRecord({
+        plan_id: this.selectedTask.id,
+        product: this.selectedTask.name,
+        output: this.outputForm.quantity,
+        unqual: this.outputForm.rejectQuantity,
+        qual: qualified,
+        equio: this.outputForm.equipmentId,
+        date: formatDate(/* @__PURE__ */ new Date()),
+        name: username,
+        md: this.outputForm.remark
+      }).then((res) => {
+        common_vendor.index.hideLoading();
+        common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:454", "创建记录响应:", JSON.stringify(res));
+        if (res && res.success && res.data && res.data.insertId) {
+          const recordId = res.data.insertId;
+          common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:458", "创建质检记录，record_id:", recordId);
+          api.quality.createQuality({
+            record_id: recordId,
+            product: this.selectedTask.name,
+            quantity: this.outputForm.quantity,
+            qual: qualified,
+            unqual: this.outputForm.rejectQuantity,
+            inspection_time: formatDate(/* @__PURE__ */ new Date())
+          }).then((qualityRes) => {
+            common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:467", "创建质检记录响应:", JSON.stringify(qualityRes));
+          }).catch((qualityError) => {
+            common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:469", "创建质检记录失败:", qualityError);
+          });
+          const taskIndex = this.productionTasks.findIndex((t) => t.id === this.selectedTask.id);
+          if (taskIndex !== -1) {
+            const newCompletedQuantity = this.productionTasks[taskIndex].completedQuantity + this.outputForm.quantity;
+            const newProgress = Math.round(newCompletedQuantity / this.productionTasks[taskIndex].planQuantity * 100);
+            const finalProgress = Math.min(newProgress, 100);
+            const finalCompletedQuantity = Math.min(newCompletedQuantity, this.productionTasks[taskIndex].planQuantity);
+            this.productionTasks[taskIndex].completedQuantity = finalCompletedQuantity;
+            let newStatus = this.productionTasks[taskIndex].status;
+            let newStatusText = this.productionTasks[taskIndex].statusText;
+            if (finalProgress === 100) {
+              newStatus = "completed";
+              newStatusText = "已完成";
+            }
+            api.plan.updatePlan(this.selectedTask.id, {
+              progress: finalProgress,
+              status: newStatus,
+              statusText: newStatusText
+            }).catch((error) => {
+              common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:500", "更新计划失败:", error);
+            });
+            this.productionTasks[taskIndex].status = newStatus;
+            this.productionTasks[taskIndex].statusText = newStatusText;
+          }
+          common_vendor.index.showToast({ title: "产量上报成功", icon: "success" });
+          this.closeOutputPopup();
+          this.calculateRealtimeData();
+        } else {
+          const errorMsg = res ? res.message : "提交失败";
+          common_vendor.index.showToast({ title: errorMsg, icon: "none" });
         }
-        if (this.productionTasks[taskIndex].completedQuantity >= this.productionTasks[taskIndex].planQuantity) {
-          this.productionTasks[taskIndex].status = "completed";
-          this.productionTasks[taskIndex].statusText = "已完成";
-        }
-      }
-      this.saveProductionRecord();
-      common_vendor.index.setStorageSync("productionTasks", this.productionTasks);
-      common_vendor.index.showToast({ title: "产量上报成功", icon: "success" });
-      this.closeOutputPopup();
-      this.calculateRealtimeData();
-    },
-    // 保存生产记录
-    saveProductionRecord() {
-      const now = /* @__PURE__ */ new Date();
-      const reportTime = now.toISOString().slice(0, 19).replace("T", " ");
-      const totalQuantity = this.outputForm.quantity;
-      const qualifiedQuantity = totalQuantity - this.outputForm.rejectQuantity;
-      const qualifiedRate = totalQuantity > 0 ? Math.round(qualifiedQuantity / totalQuantity * 100) : 0;
-      const equipment = this.devices.find((device) => device.id === this.outputForm.equipmentId);
-      const equipmentName = equipment ? equipment.name : "未知设备";
-      const recordId = "R" + now.getTime().toString().slice(-6);
-      const newRecord = {
-        id: recordId,
-        productName: this.selectedTask.name,
-        quantity: this.outputForm.quantity,
-        rejectQuantity: this.outputForm.rejectQuantity,
-        qualifiedRate,
-        equipmentId: this.outputForm.equipmentId,
-        equipmentName,
-        reportTime,
-        reportPerson: "当前用户",
-        // 实际应用中应从登录信息获取
-        remark: this.outputForm.remark
-      };
-      const existingRecords = common_vendor.index.getStorageSync("productionRecords") || [];
-      existingRecords.unshift(newRecord);
-      common_vendor.index.setStorageSync("productionRecords", existingRecords);
+      }).catch((error) => {
+        common_vendor.index.hideLoading();
+        common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:522", "提交产量上报失败:", error);
+        common_vendor.index.showToast({ title: "提交失败", icon: "none" });
+      });
     },
     // 计算实时数据
     calculateRealtimeData() {
@@ -223,8 +365,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         e: device.id
       };
     }),
-    h: common_vendor.o((...args) => $options.reportIssue && $options.reportIssue(...args)),
-    i: common_vendor.o((...args) => $options.closePopup && $options.closePopup(...args)),
+    h: common_vendor.o((...args) => $options.reportIssue && $options.reportIssue(...args), "88"),
+    i: common_vendor.o((...args) => $options.closePopup && $options.closePopup(...args), "88"),
     j: common_vendor.sr("issuePopup", "51cb737f-0"),
     k: common_vendor.p({
       type: "center"
@@ -233,19 +375,19 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     m: $data.outputForm.quantity,
     n: common_vendor.o(common_vendor.m(($event) => $data.outputForm.quantity = $event.detail.value, {
       number: true
-    })),
+    }), "08"),
     o: $data.outputForm.rejectQuantity,
     p: common_vendor.o(common_vendor.m(($event) => $data.outputForm.rejectQuantity = $event.detail.value, {
       number: true
-    })),
-    q: common_vendor.t(((_b = $options.runningDevices[$data.equipmentIndex]) == null ? void 0 : _b.name) || "请选择设备"),
-    r: common_vendor.o((...args) => $options.onEquipmentChange && $options.onEquipmentChange(...args)),
+    }), "db"),
+    q: common_vendor.t(((_b = $options.allDevices[$data.equipmentIndex]) == null ? void 0 : _b.name) || "请选择设备"),
+    r: common_vendor.o((...args) => $options.onEquipmentChange && $options.onEquipmentChange(...args), "49"),
     s: $data.equipmentIndex,
-    t: $options.runningDevices,
+    t: $options.allDevices,
     v: $data.outputForm.remark,
-    w: common_vendor.o(($event) => $data.outputForm.remark = $event.detail.value),
-    x: common_vendor.o((...args) => $options.closeOutputPopup && $options.closeOutputPopup(...args)),
-    y: common_vendor.o((...args) => $options.submitOutput && $options.submitOutput(...args)),
+    w: common_vendor.o(($event) => $data.outputForm.remark = $event.detail.value, "81"),
+    x: common_vendor.o((...args) => $options.closeOutputPopup && $options.closeOutputPopup(...args), "9e"),
+    y: common_vendor.o((...args) => $options.submitOutput && $options.submitOutput(...args), "b0"),
     z: common_vendor.sr("outputPopup", "51cb737f-1"),
     A: common_vendor.p({
       type: "center"

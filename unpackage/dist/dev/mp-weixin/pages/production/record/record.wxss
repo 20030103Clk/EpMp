@@ -13,8 +13,6 @@
 	font-weight: bold;
 	color: #1D2129;
 }
-
-/* 过滤区域样式 */
 .filter-section.data-v-0c295e82 {
 	background-color: #FFFFFF;
 	border-radius: 16rpx;
@@ -97,8 +95,6 @@
 .filter-btn.reset.data-v-0c295e82:hover {
 	background-color: #E5E6EB;
 }
-
-/* 记录列表样式 */
 .section.data-v-0c295e82 {
 	margin-bottom: 30rpx;
 }
@@ -134,37 +130,49 @@
 .record-item.data-v-0c295e82:last-child {
 	border-bottom: none;
 }
-.record-row.data-v-0c295e82 {
+.record-header.data-v-0c295e82 {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-bottom: 10rpx;
+	margin-bottom: 15rpx;
+	padding-bottom: 15rpx;
+	border-bottom: 1rpx solid #F0F2F5;
 }
-.record-row.data-v-0c295e82:last-child {
-	margin-bottom: 0;
-}
-.record-row.main-info.data-v-0c295e82 {
-	font-weight: 600;
-}
-.record-field.data-v-0c295e82 {
+.record-id.data-v-0c295e82 {
 	font-size: 24rpx;
-	color: #1D2129;
-}
-.record-field.product.data-v-0c295e82 {
-	font-size: 28rpx;
 	font-weight: bold;
 	color: #1D2129;
 }
-.record-field.equipment.data-v-0c295e82 {
-	font-size: 26rpx;
+.record-product.data-v-0c295e82 {
+	font-size: 28rpx;
+	font-weight: bold;
 	color: #1890FF;
 }
-.record-field.time.data-v-0c295e82, .record-field.operator.data-v-0c295e82 {
-	font-size: 22rpx;
-	color: #86909C;
+.record-content.data-v-0c295e82 {
+	display: flex;
+	flex-direction: column;
+	gap: 10rpx;
 }
-
-/* 空状态样式 */
+.content-row.data-v-0c295e82 {
+	display: flex;
+	align-items: center;
+}
+.label.data-v-0c295e82 {
+	font-size: 24rpx;
+	color: #86909C;
+	width: 140rpx;
+}
+.value.data-v-0c295e82 {
+	font-size: 24rpx;
+	color: #1D2129;
+	flex: 1;
+}
+.value.pass.data-v-0c295e82 {
+	color: #52C41A;
+}
+.value.fail.data-v-0c295e82 {
+	color: #FF4D4F;
+}
 .empty-state.data-v-0c295e82 {
 	padding: 60rpx 20rpx;
 	text-align: center;

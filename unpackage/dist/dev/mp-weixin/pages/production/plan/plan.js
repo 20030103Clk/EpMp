@@ -1,5 +1,99 @@
 "use strict";
 const common_vendor = require("../../../common/vendor.js");
+const API_BASE_URL = "http://localhost:3000/api";
+const api = {
+  plan: {
+    getPlans: async (params = {}) => {
+      try {
+        const queryString = Object.keys(params).map((key) => `${key}=${params[key]}`).join("&");
+        const response = await common_vendor.index.request({
+          url: `${API_BASE_URL}/plan${queryString ? `?${queryString}` : ""}`,
+          method: "GET"
+        });
+        common_vendor.index.__f__("log", "at pages/production/plan/plan.vue:145", "Get plans API response:", response);
+        if (response && (response[1] || response.data)) {
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error("Invalid response from server");
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/production/plan/plan.vue:157", "Get plans error:", error);
+        throw error;
+      }
+    },
+    createPlan: async (data) => {
+      try {
+        const response = await common_vendor.index.request({
+          url: `${API_BASE_URL}/plan`,
+          method: "POST",
+          data: JSON.stringify(data),
+          header: {
+            "Content-Type": "application/json"
+          }
+        });
+        common_vendor.index.__f__("log", "at pages/production/plan/plan.vue:172", "Create plan API response:", response);
+        if (response && (response[1] || response.data)) {
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error("Invalid response from server");
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/production/plan/plan.vue:184", "Create plan error:", error);
+        throw error;
+      }
+    },
+    updatePlan: async (id, data) => {
+      try {
+        const response = await common_vendor.index.request({
+          url: `${API_BASE_URL}/plan/${id}`,
+          method: "PUT",
+          data: JSON.stringify(data),
+          header: {
+            "Content-Type": "application/json"
+          }
+        });
+        common_vendor.index.__f__("log", "at pages/production/plan/plan.vue:199", "Update plan API response:", response);
+        if (response && (response[1] || response.data)) {
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error("Invalid response from server");
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/production/plan/plan.vue:211", "Update plan error:", error);
+        throw error;
+      }
+    },
+    deletePlan: async (id) => {
+      try {
+        const response = await common_vendor.index.request({
+          url: `${API_BASE_URL}/plan/${id}`,
+          method: "DELETE"
+        });
+        common_vendor.index.__f__("log", "at pages/production/plan/plan.vue:222", "Delete plan API response:", response);
+        if (response && (response[1] || response.data)) {
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error("Invalid response from server");
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/production/plan/plan.vue:234", "Delete plan error:", error);
+        throw error;
+      }
+    }
+  }
+};
 const _sfc_main = {
   data() {
     return {
@@ -14,13 +108,7 @@ const _sfc_main = {
         progress: "0%"
       },
       currentPlan: {},
-      plans: [
-        { id: "P001", product: "产品A", quantity: 500, startDate: "2026-01-11", endDate: "2026-01-15", status: "processing", statusText: "生产中", progress: 60 },
-        { id: "P002", product: "产品B", quantity: 300, startDate: "2026-01-12", endDate: "2026-01-16", status: "pending", statusText: "待生产", progress: 0 },
-        { id: "P003", product: "产品C", quantity: 800, startDate: "2026-01-10", endDate: "2026-01-14", status: "completed", statusText: "已完成", progress: 100 },
-        { id: "P004", product: "产品D", quantity: 200, startDate: "2026-01-11", endDate: "2026-01-13", status: "processing", statusText: "生产中", progress: 85 },
-        { id: "P005", product: "产品E", quantity: 600, startDate: "2026-01-13", endDate: "2026-01-17", status: "pending", statusText: "待生产", progress: 0 }
-      ],
+      plans: [],
       statusOptions: [
         { value: "pending", text: "待生产" },
         { value: "processing", text: "生产中" },
@@ -36,15 +124,17 @@ const _sfc_main = {
         { text: "60%", value: "60%" },
         { text: "70%", value: "70%" },
         { text: "80%", value: "80%" },
-        { text: "100%", value: "100%" },
-        { text: "", value: "" },
-        { text: "", value: "" },
-        { text: "", value: "" }
+        { text: "90%", value: "90%" },
+        { text: "100%", value: "100%" }
       ]
     };
   },
   onLoad() {
     common_vendor.index.getStorageSync("userInfo");
+    this.loadPlans();
+  },
+  onShow() {
+    this.loadPlans();
   },
   computed: {
     filteredPlans() {
@@ -52,9 +142,57 @@ const _sfc_main = {
         return this.plans;
       }
       return this.plans.filter((plan) => plan.status === this.selectedStatus);
+    },
+    isAdmin() {
+      const userInfo = common_vendor.index.getStorageSync("userInfo");
+      return userInfo && userInfo.level === 1;
     }
   },
   methods: {
+    loadPlans() {
+      common_vendor.index.showLoading({ title: "加载中..." });
+      api.plan.getPlans().then((res) => {
+        common_vendor.index.hideLoading();
+        if (res.success) {
+          this.plans = res.data.list.map((plan) => {
+            let statusText = plan.statusText;
+            if (!statusText) {
+              const statusMap = {
+                "pending": "待生产",
+                "processing": "生产中",
+                "completed": "已完成"
+              };
+              statusText = statusMap[plan.status] || "未知状态";
+            }
+            let status = plan.status;
+            if (!["pending", "processing", "completed"].includes(status)) {
+              if (plan.progress === 0) {
+                status = "pending";
+              } else if (plan.progress === 100) {
+                status = "completed";
+              } else {
+                status = "processing";
+              }
+            }
+            return {
+              id: plan.plan_id,
+              product: plan.product,
+              quantity: plan.quantity,
+              startDate: plan.startDate,
+              endDate: plan.endDate,
+              status,
+              statusText,
+              progress: plan.progress
+            };
+          });
+        } else {
+          common_vendor.index.showToast({ title: "加载失败", icon: "none" });
+        }
+      }).catch((error) => {
+        common_vendor.index.hideLoading();
+        common_vendor.index.showToast({ title: "网络错误", icon: "none" });
+      });
+    },
     addPlan() {
       this.form = {
         product: "",
@@ -97,12 +235,8 @@ const _sfc_main = {
         return;
       }
       const progress = parseInt(this.form.progress);
-      common_vendor.index.showToast({
-        title: "计划提交成功",
-        icon: "success"
-      });
-      this.plans.push({
-        id: "P00" + (this.plans.length + 1),
+      common_vendor.index.showLoading({ title: "提交中..." });
+      api.plan.createPlan({
         product: this.form.product,
         quantity: parseInt(this.form.quantity),
         startDate: this.form.startDate,
@@ -110,8 +244,22 @@ const _sfc_main = {
         status: this.form.status,
         statusText: this.statusOptions.find((opt) => opt.value === this.form.status).text,
         progress
+      }).then((res) => {
+        common_vendor.index.hideLoading();
+        if (res.success) {
+          common_vendor.index.showToast({
+            title: "计划提交成功",
+            icon: "success"
+          });
+          this.loadPlans();
+          this.close();
+        } else {
+          common_vendor.index.showToast({ title: res.message, icon: "none" });
+        }
+      }).catch((error) => {
+        common_vendor.index.hideLoading();
+        common_vendor.index.showToast({ title: "提交失败", icon: "none" });
       });
-      this.close();
     },
     editPlan(plan) {
       this.currentPlan = plan;
@@ -121,42 +269,70 @@ const _sfc_main = {
     // 保存进度修改
     saveProgress() {
       const progress = parseInt(this.form.progress);
-      const plan = this.plans.find((p) => p.id === this.currentPlan.id);
-      if (plan) {
-        plan.progress = progress;
-        if (progress === 100) {
-          plan.status = "completed";
-          plan.statusText = "已完成";
+      common_vendor.index.showLoading({ title: "更新中..." });
+      api.plan.updatePlan(this.currentPlan.id, {
+        progress,
+        status: progress === 100 ? "completed" : "processing",
+        statusText: progress === 100 ? "已完成" : "生产中"
+      }).then((res) => {
+        common_vendor.index.hideLoading();
+        if (res.success) {
+          common_vendor.index.showToast({
+            title: "进度更新成功",
+            icon: "success"
+          });
+          this.loadPlans();
+          this.close1();
+        } else {
+          common_vendor.index.showToast({ title: res.message, icon: "none" });
         }
-      }
-      common_vendor.index.showToast({
-        title: "进度更新成功",
-        icon: "success"
+      }).catch((error) => {
+        common_vendor.index.hideLoading();
+        common_vendor.index.showToast({ title: "更新失败", icon: "none" });
       });
-      this.close1();
     },
     startProduction(id) {
-      const plan = this.plans.find((p) => p.id === id);
-      if (plan) {
-        plan.status = "processing";
-        plan.statusText = "生产中";
-        common_vendor.index.showToast({
-          title: "已开始生产",
-          icon: "success"
-        });
-      }
+      common_vendor.index.showLoading({ title: "更新中..." });
+      api.plan.updatePlan(id, {
+        status: "processing",
+        statusText: "生产中"
+      }).then((res) => {
+        common_vendor.index.hideLoading();
+        if (res.success) {
+          common_vendor.index.showToast({
+            title: "已开始生产",
+            icon: "success"
+          });
+          this.loadPlans();
+        } else {
+          common_vendor.index.showToast({ title: res.message, icon: "none" });
+        }
+      }).catch((error) => {
+        common_vendor.index.hideLoading();
+        common_vendor.index.showToast({ title: "更新失败", icon: "none" });
+      });
     },
     completeProduction(id) {
-      const plan = this.plans.find((p) => p.id === id);
-      if (plan) {
-        plan.status = "completed";
-        plan.statusText = "已完成";
-        plan.progress = 100;
-        common_vendor.index.showToast({
-          title: "已完成生产",
-          icon: "success"
-        });
-      }
+      common_vendor.index.showLoading({ title: "更新中..." });
+      api.plan.updatePlan(id, {
+        status: "completed",
+        statusText: "已完成",
+        progress: 100
+      }).then((res) => {
+        common_vendor.index.hideLoading();
+        if (res.success) {
+          common_vendor.index.showToast({
+            title: "已完成生产",
+            icon: "success"
+          });
+          this.loadPlans();
+        } else {
+          common_vendor.index.showToast({ title: res.message, icon: "none" });
+        }
+      }).catch((error) => {
+        common_vendor.index.hideLoading();
+        common_vendor.index.showToast({ title: "更新失败", icon: "none" });
+      });
     },
     deletePlan(id) {
       common_vendor.index.showModal({
@@ -166,14 +342,22 @@ const _sfc_main = {
         confirmColor: "#ff2d55",
         success: (res) => {
           if (res.confirm) {
-            const index = this.plans.findIndex((p) => p.id === id);
-            if (index !== -1) {
-              this.plans.splice(index, 1);
-              common_vendor.index.showToast({
-                title: "删除成功",
-                icon: "success"
-              });
-            }
+            common_vendor.index.showLoading({ title: "删除中..." });
+            api.plan.deletePlan(id).then((res2) => {
+              common_vendor.index.hideLoading();
+              if (res2.success) {
+                common_vendor.index.showToast({
+                  title: "删除成功",
+                  icon: "success"
+                });
+                this.loadPlans();
+              } else {
+                common_vendor.index.showToast({ title: res2.message, icon: "none" });
+              }
+            }).catch((error) => {
+              common_vendor.index.hideLoading();
+              common_vendor.index.showToast({ title: "删除失败", icon: "none" });
+            });
           }
         }
       });
@@ -195,59 +379,62 @@ if (!Math) {
   (_easycom_uni_icons + _easycom_uni_datetime_picker + _easycom_uni_data_select + _easycom_uni_popup)();
 }
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
-  return {
-    a: common_vendor.o((...args) => $options.addPlan && $options.addPlan(...args)),
-    b: common_vendor.o($options.close),
-    c: common_vendor.p({
+  return common_vendor.e({
+    a: $options.isAdmin
+  }, $options.isAdmin ? {
+    b: common_vendor.o((...args) => $options.addPlan && $options.addPlan(...args), "db")
+  } : {}, {
+    c: common_vendor.o($options.close, "c0"),
+    d: common_vendor.p({
       type: "close",
       size: "28"
     }),
-    d: $data.form.product,
-    e: common_vendor.o(($event) => $data.form.product = $event.detail.value),
-    f: $data.form.quantity,
-    g: common_vendor.o(($event) => $data.form.quantity = $event.detail.value),
-    h: common_vendor.o(($event) => $data.form.startDate = $event),
-    i: common_vendor.p({
+    e: $data.form.product,
+    f: common_vendor.o(($event) => $data.form.product = $event.detail.value, "9e"),
+    g: $data.form.quantity,
+    h: common_vendor.o(($event) => $data.form.quantity = $event.detail.value, "c8"),
+    i: common_vendor.o(($event) => $data.form.startDate = $event, "f3"),
+    j: common_vendor.p({
       type: "date",
       modelValue: $data.form.startDate
     }),
-    j: common_vendor.o(($event) => $data.form.endDate = $event),
-    k: common_vendor.p({
+    k: common_vendor.o(($event) => $data.form.endDate = $event, "21"),
+    l: common_vendor.p({
       type: "date",
       modelValue: $data.form.endDate
     }),
-    l: common_vendor.o(($event) => $data.form.status = $event),
-    m: common_vendor.p({
+    m: common_vendor.o(($event) => $data.form.status = $event, "e5"),
+    n: common_vendor.p({
       label: "状态",
       localdata: $data.statusOptions,
       placeholder: "请选择状态",
       clearable: true,
       modelValue: $data.form.status
     }),
-    n: common_vendor.o(($event) => $data.form.progress = $event),
-    o: common_vendor.p({
+    o: common_vendor.o(($event) => $data.form.progress = $event, "69"),
+    p: common_vendor.p({
       label: "进度",
       localdata: $data.candidates,
       placeholder: "请选择进度",
       clearable: true,
       modelValue: $data.form.progress
     }),
-    p: common_vendor.o((...args) => $options.close && $options.close(...args)),
-    q: common_vendor.o((...args) => $options.submitPlan && $options.submitPlan(...args)),
-    r: common_vendor.sr("popup", "16b64818-0"),
-    s: common_vendor.p({
+    q: common_vendor.o((...args) => $options.close && $options.close(...args), "e7"),
+    r: common_vendor.o((...args) => $options.submitPlan && $options.submitPlan(...args), "56"),
+    s: common_vendor.sr("popup", "16b64818-0"),
+    t: common_vendor.p({
       ["mask-click"]: false,
       background: "rgba(0, 0, 0, 0.6)"
     }),
-    t: $data.selectedStatus === "all" ? 1 : "",
-    v: common_vendor.o(($event) => $data.selectedStatus = "all"),
-    w: $data.selectedStatus === "pending" ? 1 : "",
-    x: common_vendor.o(($event) => $data.selectedStatus = "pending"),
-    y: $data.selectedStatus === "processing" ? 1 : "",
-    z: common_vendor.o(($event) => $data.selectedStatus = "processing"),
-    A: $data.selectedStatus === "completed" ? 1 : "",
-    B: common_vendor.o(($event) => $data.selectedStatus = "completed"),
-    C: common_vendor.f($options.filteredPlans, (plan, index, i0) => {
+    v: $data.selectedStatus === "all" ? 1 : "",
+    w: common_vendor.o(($event) => $data.selectedStatus = "all", "87"),
+    x: $data.selectedStatus === "pending" ? 1 : "",
+    y: common_vendor.o(($event) => $data.selectedStatus = "pending", "74"),
+    z: $data.selectedStatus === "processing" ? 1 : "",
+    A: common_vendor.o(($event) => $data.selectedStatus = "processing", "7c"),
+    B: $data.selectedStatus === "completed" ? 1 : "",
+    C: common_vendor.o(($event) => $data.selectedStatus = "completed", "67"),
+    D: common_vendor.f($options.filteredPlans, (plan, index, i0) => {
       return common_vendor.e({
         a: common_vendor.t(plan.id),
         b: common_vendor.t(plan.statusText),
@@ -258,11 +445,12 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         g: common_vendor.t(plan.endDate),
         h: plan.progress + "%",
         i: common_vendor.t(plan.progress),
-        j: plan.status === "processing"
-      }, plan.status === "processing" ? {
+        j: plan.status === "processing" && $options.isAdmin
+      }, plan.status === "processing" && $options.isAdmin ? {
         k: common_vendor.o(($event) => $options.editPlan(plan), index)
+      } : {}, $options.isAdmin ? {
+        l: common_vendor.o(($event) => $options.deletePlan(plan.id), index)
       } : {}, {
-        l: common_vendor.o(($event) => $options.deletePlan(plan.id), index),
         m: plan.status === "pending"
       }, plan.status === "pending" ? {
         n: common_vendor.o(($event) => $options.startProduction(plan.id), index)
@@ -274,27 +462,28 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         q: index
       });
     }),
-    D: common_vendor.o($options.close1),
-    E: common_vendor.p({
+    E: $options.isAdmin,
+    F: common_vendor.o($options.close1, "d3"),
+    G: common_vendor.p({
       type: "close",
       size: "28"
     }),
-    F: common_vendor.t($data.currentPlan.id),
-    G: common_vendor.o(($event) => $data.form.progress = $event),
-    H: common_vendor.p({
+    H: common_vendor.t($data.currentPlan.id),
+    I: common_vendor.o(($event) => $data.form.progress = $event, "0b"),
+    J: common_vendor.p({
       label: "进度",
       localdata: $data.candidates,
       placeholder: "请选择进度",
       clearable: true,
       modelValue: $data.form.progress
     }),
-    I: common_vendor.o((...args) => $options.saveProgress && $options.saveProgress(...args)),
-    J: common_vendor.sr("editPopup", "16b64818-6"),
-    K: common_vendor.p({
+    K: common_vendor.o((...args) => $options.saveProgress && $options.saveProgress(...args), "fb"),
+    L: common_vendor.sr("editPopup", "16b64818-6"),
+    M: common_vendor.p({
       ["mask-click"]: false,
       background: "rgba(0, 0, 0, 0.6)"
     })
-  };
+  });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-16b64818"]]);
 wx.createPage(MiniProgramPage);

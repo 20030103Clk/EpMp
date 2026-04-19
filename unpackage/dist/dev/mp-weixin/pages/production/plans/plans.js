@@ -1,48 +1,24 @@
 "use strict";
 const common_vendor = require("../../../common/vendor.js");
+const API_BASE_URL = "http://localhost:3000/api";
+const api = {
+  plan: {
+    getPlans: async (params = {}) => {
+      const queryString = Object.keys(params).map((key) => `${key}=${params[key]}`).join("&");
+      const response = await common_vendor.index.request({
+        url: `${API_BASE_URL}/plan${queryString ? `?${queryString}` : ""}`,
+        method: "GET"
+      });
+      return response[1].data;
+    }
+  }
+};
 const _sfc_main = {
   data() {
     return {
       selectedStatus: "all",
       selectedTime: "week",
-      orders: [
-        {
-          id: "O001",
-          product: "产品A",
-          quantity: 500,
-          orderDate: "2026-01-19",
-          deliveryDate: "2026-01-23",
-          status: "processing",
-          statusText: "生产中"
-        },
-        {
-          id: "O002",
-          product: "产品B",
-          quantity: 300,
-          orderDate: "2026-01-18",
-          deliveryDate: "2026-01-22",
-          status: "pending",
-          statusText: "待生产"
-        },
-        {
-          id: "O003",
-          product: "产品C",
-          quantity: 800,
-          orderDate: "2026-01-17",
-          deliveryDate: "2026-01-21",
-          status: "completed",
-          statusText: "已完成"
-        },
-        {
-          id: "O004",
-          product: "产品E",
-          quantity: 600,
-          orderDate: "2026-01-15",
-          deliveryDate: "2026-01-19",
-          status: "completed",
-          statusText: "已完成"
-        }
-      ]
+      orders: []
     };
   },
   computed: {
@@ -70,26 +46,52 @@ const _sfc_main = {
       return filtered.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
     }
   },
-  methods: {}
+  onLoad() {
+    this.loadOrders();
+  },
+  methods: {
+    loadOrders() {
+      common_vendor.index.showLoading({ title: "加载中..." });
+      api.plan.getPlans().then((res) => {
+        common_vendor.index.hideLoading();
+        if (res.success) {
+          this.orders = res.data.list.map((plan) => ({
+            id: plan.plan_id,
+            product: plan.product,
+            quantity: plan.quantity,
+            orderDate: plan.start_date,
+            deliveryDate: plan.end_date,
+            status: plan.status,
+            statusText: plan.statusText
+          }));
+        } else {
+          common_vendor.index.showToast({ title: "加载失败", icon: "none" });
+        }
+      }).catch((error) => {
+        common_vendor.index.hideLoading();
+        common_vendor.index.showToast({ title: "网络错误", icon: "none" });
+      });
+    }
+  }
 };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
     a: $data.selectedStatus === "all" ? 1 : "",
-    b: common_vendor.o(($event) => $data.selectedStatus = "all"),
+    b: common_vendor.o(($event) => $data.selectedStatus = "all", "87"),
     c: $data.selectedStatus === "pending" ? 1 : "",
-    d: common_vendor.o(($event) => $data.selectedStatus = "pending"),
+    d: common_vendor.o(($event) => $data.selectedStatus = "pending", "be"),
     e: $data.selectedStatus === "processing" ? 1 : "",
-    f: common_vendor.o(($event) => $data.selectedStatus = "processing"),
+    f: common_vendor.o(($event) => $data.selectedStatus = "processing", "85"),
     g: $data.selectedStatus === "completed" ? 1 : "",
-    h: common_vendor.o(($event) => $data.selectedStatus = "completed"),
+    h: common_vendor.o(($event) => $data.selectedStatus = "completed", "63"),
     i: $data.selectedTime === "today" ? 1 : "",
-    j: common_vendor.o(($event) => $data.selectedTime = "today"),
+    j: common_vendor.o(($event) => $data.selectedTime = "today", "cb"),
     k: $data.selectedTime === "week" ? 1 : "",
-    l: common_vendor.o(($event) => $data.selectedTime = "week"),
+    l: common_vendor.o(($event) => $data.selectedTime = "week", "bf"),
     m: $data.selectedTime === "month" ? 1 : "",
-    n: common_vendor.o(($event) => $data.selectedTime = "month"),
+    n: common_vendor.o(($event) => $data.selectedTime = "month", "82"),
     o: $data.selectedTime === "all" ? 1 : "",
-    p: common_vendor.o(($event) => $data.selectedTime = "all"),
+    p: common_vendor.o(($event) => $data.selectedTime = "all", "2e"),
     q: common_vendor.f($options.filteredOrders, (order, index, i0) => {
       return {
         a: common_vendor.t(order.id),

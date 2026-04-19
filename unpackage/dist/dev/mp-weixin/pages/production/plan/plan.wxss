@@ -66,6 +66,8 @@
 	display: flex;
 	flex-direction: column;
 	gap: 20rpx;
+	position: relative;
+	z-index: 1;
 }
 .plan-item.data-v-16b64818 {
 	background-color: #fff;
@@ -174,7 +176,7 @@
 	color: #fff;
 	border-color: #ff2d55;
 }
-.action-btn delete.data-v-16b64818 {
+.action-btn.delete.data-v-16b64818 {
 	background-color: #ff5c5c;
 	color: #fff;
 	border-color: #ff5c5c;
@@ -220,10 +222,12 @@
 .popup-wrapper.data-v-16b64818 {
     background-color: #fff;
     border-radius: 16rpx;
-    width: 600rpx;
-    max-width: 90vw;
+    width: 700rpx;
+    max-width: 95vw;
     box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
     overflow: hidden;
+    z-index: 9999;
+    position: relative;
 }
 .popup-header.data-v-16b64818 {
     display: flex;
@@ -248,9 +252,10 @@
 }
 .popup-content.data-v-16b64818 {
     padding: 32rpx;
-	width: 540rpx;
+	width: 100%;
 	background-color: #fff;
 	border-radius: 10rpx;
+	box-sizing: border-box;
 }
 .form-item.data-v-16b64818 {
     margin-bottom: 28rpx;
@@ -353,6 +358,52 @@
     display: none;
 }
 .example-body.data-v-16b64818 {
-		padding: 12px;
-		background-color: #FFFFFF;
+    padding: 12rpx;
+    background-color: #FFFFFF;
+    margin: 0;
+    border: none;
+}
+
+/* 动画容器 */
+.animation-container.data-v-16b64818 {
+    margin: 20rpx 0;
+    height: 200rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 20rpx;
+    background-color: #f0f0f0;
+}
+
+/* 波浪动画 */
+.wave-animation.data-v-16b64818 {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+.wave.data-v-16b64818 {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(0,122,255,0.3) 0%, rgba(0,122,255,0.8) 50%, rgba(0,122,255,0.3) 100%);
+    animation: wave-16b64818 2s linear infinite;
+    transform: translateX(-50%);
+}
+@keyframes wave-16b64818 {
+0% {
+        transform: translateX(-50%) translateY(100%);
+        opacity: 0;
+}
+50% {
+        opacity: 1;
+}
+100% {
+        transform: translateX(-50%) translateY(-100%);
+        opacity: 0;
+}
 }

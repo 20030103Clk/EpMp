@@ -2,7 +2,7 @@
 	<view class="container">
 		<view class="header">
 			<text class="title">生产计划管理</text>
-			<button class="add-btn" @click="addPlan">+ 新增计划</button>
+			<button class="add-btn" @click="addPlan" v-if="isAdmin">+ 新增计划</button>
 			<uni-popup ref="popup" :mask-click="false" background="rgba(0, 0, 0, 0.6)">
 				<view class="popup-wrapper">
 					<view class="popup-header">
@@ -93,8 +93,8 @@
 				</view>
 				
 				<view class="plan-actions">
-					<button class="action-btn edit" @click="editPlan(plan)" v-if="plan.status === 'processing'">编辑</button>
-					<button class="action-btn delete" @click="deletePlan(plan.id)">删除</button>
+					<button class="action-btn edit" @click="editPlan(plan)" v-if="plan.status === 'processing' && isAdmin">编辑</button>
+					<button class="action-btn delete" @click="deletePlan(plan.id)" v-if="isAdmin">删除</button>
 					<button class="action-btn start" v-if="plan.status === 'pending'" @click="startProduction(plan.id)">开始生产</button>
 					<button class="action-btn complete" v-if="plan.status === 'processing'" @click="completeProduction(plan.id)">完成生产</button>
 				</view>
@@ -110,11 +110,18 @@
 					<view class="popup-content">
 						<text class="form-label">计划#{{ currentPlan.id }}</text>
 						<view class="form-item">
-							<text class="form-label">当前进度</text>
-							<view class="example-body">
-								<uni-data-select label="进度" :localdata="candidates" placeholder="请选择进度" v-model="form.progress" clearable></uni-data-select>
+						<text class="form-label">当前进度</text>
+						<view class="example-body">
+							<uni-data-select label="进度" :localdata="candidates" placeholder="请选择进度" v-model="form.progress" clearable></uni-data-select>
+						</view>
+						<view class="animation-container">
+							<view class="wave-animation">
+								<view class="wave"></view>
+								<view class="wave" style="animation-delay: 0.3s"></view>
+								<view class="wave" style="animation-delay: 0.6s"></view>
 							</view>
 						</view>
+					</view>
 						<button class="submit-btn" @click="saveProgress">完成</button>
 					</view>
 				</view>
@@ -124,6 +131,113 @@
 </template>
 
 <script>
+const API_BASE_URL = 'http://localhost:3000/api';
+
+const api = {
+  plan: {
+    getPlans: async (params = {}) => {
+      try {
+        const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+        const response = await uni.request({
+          url: `${API_BASE_URL}/plan${queryString ? `?${queryString}` : ''}`,
+          method: 'GET'
+        });
+        console.log('Get plans API response:', response);
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        console.error('Get plans error:', error);
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    },
+    createPlan: async (data) => {
+      try {
+        const response = await uni.request({
+          url: `${API_BASE_URL}/plan`,
+          method: 'POST',
+          data: JSON.stringify(data),
+          header: {
+            'Content-Type': 'application/json'
+          }
+        });
+        console.log('Create plan API response:', response);
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        console.error('Create plan error:', error);
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    },
+    updatePlan: async (id, data) => {
+      try {
+        const response = await uni.request({
+          url: `${API_BASE_URL}/plan/${id}`,
+          method: 'PUT',
+          data: JSON.stringify(data),
+          header: {
+            'Content-Type': 'application/json'
+          }
+        });
+        console.log('Update plan API response:', response);
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        console.error('Update plan error:', error);
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    },
+    deletePlan: async (id) => {
+      try {
+        const response = await uni.request({
+          url: `${API_BASE_URL}/plan/${id}`,
+          method: 'DELETE'
+        });
+        console.log('Delete plan API response:', response);
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        console.error('Delete plan error:', error);
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    }
+  }
+};
 export default {
 	data() {
 		return {
@@ -138,13 +252,7 @@ export default {
 				progress: '0%'
 			},
 			currentPlan: {},
-			plans: [
-				{ id: 'P001', product: '产品A', quantity: 500, startDate: '2026-01-11', endDate: '2026-01-15', status: 'processing', statusText: '生产中', progress: 60 },
-				{ id: 'P002', product: '产品B', quantity: 300, startDate: '2026-01-12', endDate: '2026-01-16', status: 'pending', statusText: '待生产', progress: 0 },
-				{ id: 'P003', product: '产品C', quantity: 800, startDate: '2026-01-10', endDate: '2026-01-14', status: 'completed', statusText: '已完成', progress: 100 },
-				{ id: 'P004', product: '产品D', quantity: 200, startDate: '2026-01-11', endDate: '2026-01-13', status: 'processing', statusText: '生产中', progress: 85 },
-				{ id: 'P005', product: '产品E', quantity: 600, startDate: '2026-01-13', endDate: '2026-01-17', status: 'pending', statusText: '待生产', progress: 0 }
-			],
+			plans: [],
 			statusOptions: [
 				{ value: 'pending', text: '待生产' },
 				{ value: 'processing', text: '生产中' },
@@ -152,19 +260,16 @@ export default {
 			],
 			candidates: [
 				{ text: '0%', value: '0%' },
-        		{ text: '10%', value: '10%' },
-        		{ text: '20%', value: '20%' },
-        		{ text: '30%', value: '30%' },
+				{ text: '10%', value: '10%' },
+				{ text: '20%', value: '20%' },
+				{ text: '30%', value: '30%' },
 				{ text: '40%', value: '40%' },
-        		{ text: '50%', value: '50%' },
+				{ text: '50%', value: '50%' },
 				{ text: '60%', value: '60%' },
 				{ text: '70%', value: '70%' },
-        		{ text: '80%', value: '80%' },
-        		{ text: '100%', value: '100%' },
-				{ text:'' , value: ''},
-				{ text:'' , value: ''},
-				{ text:'' , value: ''},
-
+				{ text: '80%', value: '80%' },
+				{ text: '90%', value: '90%' },
+				{ text: '100%', value: '100%' }
 			]
 		};
 	},
@@ -175,6 +280,12 @@ export default {
 			// 未登录，跳转到登录页面
 			//uni.redirectTo({ url: '/pages/production/login/login' });
 		}
+		// === API调用 ===
+		this.loadPlans();
+	},
+	onShow() {
+		// 每次页面显示时重新加载数据，确保删除计划后能更新显示
+		this.loadPlans();
 	},
 	computed: {
 		filteredPlans() {
@@ -182,9 +293,62 @@ export default {
 				return this.plans;
 			}
 			return this.plans.filter(plan => plan.status === this.selectedStatus);
+		},
+		isAdmin() {
+			const userInfo = uni.getStorageSync('userInfo');
+			return userInfo && userInfo.level === 1;
 		}
 	},
 	methods: {
+		loadPlans() {
+			uni.showLoading({ title: '加载中...' });
+			api.plan.getPlans().then(res => {
+				uni.hideLoading();
+				if (res.success) {
+					this.plans = res.data.list.map(plan => {
+						// 根据状态生成状态文本
+						let statusText = plan.statusText;
+						if (!statusText) {
+							const statusMap = {
+								'pending': '待生产',
+								'processing': '生产中',
+								'completed': '已完成'
+							};
+							statusText = statusMap[plan.status] || '未知状态';
+						}
+						
+						// 规范化状态值
+						let status = plan.status;
+						if (!['pending', 'processing', 'completed'].includes(status)) {
+							// 根据进度判断状态
+							if (plan.progress === 0) {
+								status = 'pending';
+							} else if (plan.progress === 100) {
+								status = 'completed';
+							} else {
+								status = 'processing';
+							}
+						}
+						
+						return {
+							id: plan.plan_id,
+							product: plan.product,
+							quantity: plan.quantity,
+							startDate: plan.startDate,
+							endDate: plan.endDate,
+							status: status,
+							statusText: statusText,
+							progress: plan.progress
+						};
+					});
+				} else {
+					uni.showToast({ title: '加载失败', icon: 'none' });
+				}
+			}).catch(error => {
+				uni.hideLoading();
+				uni.showToast({ title: '网络错误', icon: 'none' });
+			});
+		},
 		addPlan() {
 			this.form = {
 				product: '',
@@ -230,14 +394,9 @@ export default {
 			// 获取进度数值
 			const progress = parseInt(this.form.progress);
 			
-			// 这里可以添加提交到后端的逻辑
-			uni.showToast({ 
-				title: '计划提交成功', 
-				icon: 'success' 
-			});
-
-			this.plans.push({
-				id: 'P00' + (this.plans.length + 1),
+			// === API调用 ===
+			uni.showLoading({ title: '提交中...' });
+			api.plan.createPlan({
 				product: this.form.product,
 				quantity: parseInt(this.form.quantity),
 				startDate: this.form.startDate,
@@ -245,9 +404,22 @@ export default {
 				status: this.form.status,
 				statusText: this.statusOptions.find(opt => opt.value === this.form.status).text,
 				progress: progress
+			}).then(res => {
+				uni.hideLoading();
+				if (res.success) {
+					uni.showToast({ 
+						title: '计划提交成功', 
+						icon: 'success' 
+					});
+					this.loadPlans(); // 重新加载计划列表
+					this.close();
+				} else {
+					uni.showToast({ title: res.message, icon: 'none' });
+				}
+			}).catch(error => {
+				uni.hideLoading();
+				uni.showToast({ title: '提交失败', icon: 'none' });
 			});
-			
-			this.close();
 		},
 		editPlan(plan) {
 			this.currentPlan = plan;
@@ -260,47 +432,73 @@ export default {
 			// 获取进度数值
 			const progress = parseInt(this.form.progress);
 			
-			// 更新计划进度
-			const plan = this.plans.find(p => p.id === this.currentPlan.id);
-			if (plan) {
-				plan.progress = progress;
-				// 如果进度达到100%，自动完成生产
-				if (progress === 100) {
-					plan.status = 'completed';
-					plan.statusText = '已完成';
+			// === API调用 ===
+			uni.showLoading({ title: '更新中...' });
+			api.plan.updatePlan(this.currentPlan.id, {
+				progress: progress,
+				status: progress === 100 ? 'completed' : 'processing',
+				statusText: progress === 100 ? '已完成' : '生产中'
+			}).then(res => {
+				uni.hideLoading();
+				if (res.success) {
+					uni.showToast({
+						title: '进度更新成功',
+						icon: 'success'
+					});
+					this.loadPlans(); // 重新加载计划列表
+					this.close1();
+				} else {
+					uni.showToast({ title: res.message, icon: 'none' });
 				}
-			}
-			
-			uni.showToast({
-				title: '进度更新成功',
-				icon: 'success'
+			}).catch(error => {
+				uni.hideLoading();
+				uni.showToast({ title: '更新失败', icon: 'none' });
 			});
-			
-
-			this.close1();
 		},
 		startProduction(id) {
-			const plan = this.plans.find(p => p.id === id);
-			if (plan) {
-				plan.status = 'processing';
-				plan.statusText = '生产中';
-				uni.showToast({
-					title: '已开始生产',
-					icon: 'success'
-				});
-			}
+			// === API调用 ===
+			uni.showLoading({ title: '更新中...' });
+			api.plan.updatePlan(id, {
+				status: 'processing',
+				statusText: '生产中'
+			}).then(res => {
+				uni.hideLoading();
+				if (res.success) {
+					uni.showToast({
+						title: '已开始生产',
+						icon: 'success'
+					});
+					this.loadPlans(); // 重新加载计划列表
+				} else {
+					uni.showToast({ title: res.message, icon: 'none' });
+				}
+			}).catch(error => {
+				uni.hideLoading();
+				uni.showToast({ title: '更新失败', icon: 'none' });
+			});
 		},
 		completeProduction(id) {
-			const plan = this.plans.find(p => p.id === id);
-			if (plan) {
-				plan.status = 'completed';
-				plan.statusText = '已完成';
-				plan.progress = 100;
-				uni.showToast({
-					title: '已完成生产',
-					icon: 'success'
-				});
-			}
+			// === API调用 ===
+			uni.showLoading({ title: '更新中...' });
+			api.plan.updatePlan(id, {
+				status: 'completed',
+				statusText: '已完成',
+				progress: 100
+			}).then(res => {
+				uni.hideLoading();
+				if (res.success) {
+					uni.showToast({
+						title: '已完成生产',
+						icon: 'success'
+					});
+					this.loadPlans(); // 重新加载计划列表
+				} else {
+					uni.showToast({ title: res.message, icon: 'none' });
+				}
+			}).catch(error => {
+				uni.hideLoading();
+				uni.showToast({ title: '更新失败', icon: 'none' });
+			});
 		},
 		deletePlan(id) {
 			uni.showModal({
@@ -310,14 +508,23 @@ export default {
 				confirmColor: '#ff2d55',
 				success: (res) => {
 					if (res.confirm) {
-						const index = this.plans.findIndex(p => p.id === id);
-						if (index !== -1) {
-							this.plans.splice(index, 1);
-							uni.showToast({
-								title: '删除成功',
-								icon: 'success'
-							});
-						}
+						// === API调用 ===
+						uni.showLoading({ title: '删除中...' });
+						api.plan.deletePlan(id).then(res => {
+							uni.hideLoading();
+							if (res.success) {
+								uni.showToast({
+									title: '删除成功',
+									icon: 'success'
+								});
+								this.loadPlans(); // 重新加载计划列表
+							} else {
+								uni.showToast({ title: res.message, icon: 'none' });
+							}
+						}).catch(error => {
+							uni.hideLoading();
+							uni.showToast({ title: '删除失败', icon: 'none' });
+						});
 					}
 				}
 			});
@@ -404,6 +611,8 @@ export default {
 	display: flex;
 	flex-direction: column;
 	gap: 20rpx;
+	position: relative;
+	z-index: 1;
 }
 
 .plan-item {
@@ -532,7 +741,7 @@ export default {
 	color: #fff;
 	border-color: #ff2d55;
 }
-.action-btn delete {
+.action-btn.delete {
 	background-color: #ff5c5c;
 	color: #fff;
 	border-color: #ff5c5c;
@@ -580,10 +789,12 @@ export default {
 .popup-wrapper {
     background-color: #fff;
     border-radius: 16rpx;
-    width: 600rpx;
-    max-width: 90vw;
+    width: 700rpx;
+    max-width: 95vw;
     box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
     overflow: hidden;
+    z-index: 9999;
+    position: relative;
 }
 
 .popup-header {
@@ -613,9 +824,10 @@ export default {
 
 .popup-content {
     padding: 32rpx;
-	width: 540rpx;
+	width: 100%;
 	background-color: #fff;
 	border-radius: 10rpx;
+	box-sizing: border-box;
 }
 
 .form-item {
@@ -732,7 +944,55 @@ export default {
     display: none;
 }
 .example-body {
-		padding: 12px;
-		background-color: #FFFFFF;
-	}
+    padding: 12rpx;
+    background-color: #FFFFFF;
+    margin: 0;
+    border: none;
+}
+
+/* 动画容器 */
+.animation-container {
+    margin: 20rpx 0;
+    height: 200rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 20rpx;
+    background-color: #f0f0f0;
+}
+
+/* 波浪动画 */
+.wave-animation {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(0,122,255,0.3) 0%, rgba(0,122,255,0.8) 50%, rgba(0,122,255,0.3) 100%);
+    animation: wave 2s linear infinite;
+    transform: translateX(-50%);
+}
+
+@keyframes wave {
+    0% {
+        transform: translateX(-50%) translateY(100%);
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-50%) translateY(-100%);
+        opacity: 0;
+    }
+}
 </style>

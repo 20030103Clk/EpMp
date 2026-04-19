@@ -2,7 +2,7 @@
 	<view class="container">
 		<view class="header">
 			<text class="title">库存管理</text>
-			<button type="text" class="add-btn" @click="addproduct">添加产品</button>
+			<button type="text" class="add-btn" @click="addproduct" v-if="isAdmin">添加产品</button>
 			<uni-search-bar @confirm="search" :focus="true" v-model="searchValue" @blur="blur" @focus="focus" @input="input"
 				@cancel="cancel" @clear="clear">
 			</uni-search-bar>
@@ -49,7 +49,7 @@
 					
 					<view class="item-actions">
 						<button class="action-btn" @click="viewInventory(item)">查看详情</button>
-						<button class="delete-btn" @click="deleteInventory(index)">&nbsp;&nbsp;&nbsp;&nbsp;删除&nbsp;&nbsp;&nbsp;&nbsp;</button>
+						<button class="delete-btn" @click="deleteInventory(index)" v-if="isAdmin">&nbsp;&nbsp;&nbsp;&nbsp;删除&nbsp;&nbsp;&nbsp;&nbsp;</button>
 					</view>
 		</view>
 		</view>
@@ -88,6 +88,7 @@
 					</view>
 				</view>
 				<view class="popup-footer">
+					<button type="default" @click="editInventory" class="action-btn" v-if="isAdmin">编辑</button>
 					<button type="primary" @click="closepopup" class="action-btn">关闭</button>
 				</view>
 			</view>
@@ -128,11 +129,150 @@
 				</view>
 			</view>
 		</uni-popup>
+		
+		<!-- 编辑库存弹出层 -->
+		<uni-popup ref="editPopup" :mask-click="false" background="rgba(0, 0, 0, 0.6)">
+			<view class="simple-popup">
+				<view class="popup-header">
+					<text class="popup-title">编辑库存</text>
+					<uni-icons type="close" size="28" @click="closeEditPopup" class="close-icon"></uni-icons>
+				</view>
+				<view class="popup-content">
+					<view class="form-item">
+						<text class="form-label">产品名称</text>
+						<input type="text" v-model="editProduct.product" class="form-input" placeholder="请输入产品名称" />
+					</view>
+					<view class="form-item">
+						<text class="form-label">产品编号</text>
+						<input type="text" v-model="editProduct.code" class="form-input" placeholder="请输入产品编号" disabled />
+					</view>
+					<view class="form-item">
+						<text class="form-label">当前库存</text>
+						<input type="number" v-model="editProduct.currentStock" class="form-input" placeholder="请输入当前库存" />
+					</view>
+					<view class="form-item">
+						<text class="form-label">安全库存</text>
+						<input type="number" v-model="editProduct.safeStock" class="form-input" placeholder="请输入安全库存" />
+					</view>
+					<view class="form-item">
+						<text class="form-label">库存单位</text>
+						<input type="text" v-model="editProduct.unit" class="form-input" placeholder="请输入库存单位" />
+					</view>
+					<view class="form-item">
+						<text class="form-label">库存位置</text>
+						<input type="text" v-model="editProduct.location" class="form-input" placeholder="请输入库存位置" />
+					</view>
+				</view>
+				<view class="popup-footer">
+					<button type="default" @click="closeEditPopup" class="action-btn">取消</button>
+					<button type="primary" @click="submitEditProduct" class="action-btn">确定</button>
+				</view>
+			</view>
+		</uni-popup>
 	</view>
 	</view>
 </template>
 
 <script>
+const API_BASE_URL = 'http://localhost:3000/api';
+
+const api = {
+  inventory: {
+    getInventories: async (params = {}) => {
+      try {
+        const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+        const response = await uni.request({
+          url: `${API_BASE_URL}/inventory${queryString ? `?${queryString}` : ''}`,
+          method: 'GET'
+        });
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    },
+    createInventory: async (data) => {
+      try {
+        const response = await uni.request({
+          url: `${API_BASE_URL}/inventory`,
+          method: 'POST',
+          data: JSON.stringify(data),
+          header: {
+            'Content-Type': 'application/json'
+          }
+        });
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    },
+    updateInventory: async (id, data) => {
+      try {
+        const response = await uni.request({
+          url: `${API_BASE_URL}/inventory/${id}`,
+          method: 'PUT',
+          data: JSON.stringify(data),
+          header: {
+            'Content-Type': 'application/json'
+          }
+        });
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    },
+    deleteInventory: async (id) => {
+      try {
+        const response = await uni.request({
+          url: `${API_BASE_URL}/inventory/${id}`,
+          method: 'DELETE'
+        });
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    }
+  }
+};
 export default {
 	data() {
 		return {
@@ -146,40 +286,16 @@ export default {
 				unit: '件',
 				location: ''
 			},
-			inventoryItems: [
-				{
-					product: '产品A',
-					code: 'PROD-A001',
-					currentStock: 2500,
-					safeStock: 500,
-					unit: '件',
-					location: '仓库A-1区'
-				},
-				{
-					product: '产品B',
-					code: 'PROD-B001',
-					currentStock: 1200,
-					safeStock: 300,
-					unit: '件',
-					location: '仓库A-2区'
-				},
-				{
-					product: '产品C',
-					code: 'PROD-C001',
-					currentStock: 350,
-					safeStock: 500,
-					unit: '件',
-					location: '仓库B-1区'
-				},
-				{
-					product: '产品D',
-					code: 'PROD-D001',
-					currentStock: 4200,
-					safeStock: 1000,
-					unit: '件',
-					location: '仓库B-2区'
-				}
-			]
+			editProduct: {
+				id: '',
+				product: '',
+				code: '',
+				currentStock: 0,
+				safeStock: 0,
+				unit: '件',
+				location: ''
+			},
+			inventoryItems: []
 		};
 	},
 	computed : {
@@ -191,12 +307,78 @@ export default {
 			if(this.searchValue === '') return this.inventoryItems;
 			const keyword = this.searchValue.trim().toLowerCase();
 			return this.inventoryItems.filter(item => item.product.toLowerCase().includes(keyword) || item.code.toLowerCase().includes(keyword))
+		},
+		isAdmin() {
+			const userInfo = uni.getStorageSync('userInfo');
+			return userInfo && userInfo.level === 1;
 		}
 	},
+	onLoad() {
+		// 加载库存数据
+		this.loadInventory();
+	},
 	methods: {
+		// 加载库存数据
+		loadInventory() {
+			uni.showLoading({ title: '加载中...' });
+			api.inventory.getInventories().then(res => {
+				uni.hideLoading();
+				if (res.success) {
+					this.inventoryItems = res.data.list.map(item => ({
+						id: item.inventory_id,
+						product: item.product,
+						code: item.code,
+						currentStock: item.currentStock,
+						safeStock: item.safeStock,
+						unit: item.unit || '件',
+						location: item.location
+					}));
+				} else {
+					uni.showToast({ title: '加载失败', icon: 'none' });
+				}
+			}).catch(error => {
+				uni.hideLoading();
+				uni.showToast({ title: '网络错误', icon: 'none' });
+			});
+		},
+		
+		// 搜索库存
+		search() {
+			if (!this.searchValue.trim()) {
+				this.loadInventory();
+				return;
+			}
+			uni.showLoading({ title: '搜索中...' });
+			api.inventory.getInventories({ product: this.searchValue }).then(res => {
+				uni.hideLoading();
+				if (res.success) {
+					this.inventoryItems = res.data.list.map(item => ({
+						id: item.inventory_id,
+						product: item.product,
+						code: item.code,
+						currentStock: item.currentStock,
+						safeStock: item.safeStock,
+						unit: item.unit || '件',
+						location: item.location
+					}));
+				} else {
+					uni.showToast({ title: '搜索失败', icon: 'none' });
+				}
+			}).catch(error => {
+				uni.hideLoading();
+				uni.showToast({ title: '网络错误', icon: 'none' });
+			});
+		},
+		
+		// 清除搜索
+		clear() {
+			this.searchValue = '';
+			this.loadInventory();
+		},
+		
 		viewInventory(itemid) {
 			const code = itemid.code;
-			this.currentInventory = this.filterItems.find(item => item.code === code) || {}; 
+			this.currentInventory = this.filterItems.find(item => item.code === code) || {};
 			this.$refs.popup.open();
 			uni.showToast({
 				title: `查看库存#${code}`,
@@ -250,19 +432,35 @@ export default {
 				return;
 			}
 			
-			this.inventoryItems.push({
-				...this.newProduct
-			});
-			
-			this.closeAddPopup();
-			
-			uni.showToast({
-				title: '产品添加成功',
-				icon: 'success'
+			// === API调用 ===
+			uni.showLoading({ title: '提交中...' });
+			api.inventory.createInventory({
+				product: this.newProduct.product,
+				code: this.newProduct.code,
+				currentStock: this.newProduct.currentStock,
+				safeStock: this.newProduct.safeStock,
+				unit: this.newProduct.unit,
+				location: this.newProduct.location
+			}).then(res => {
+				uni.hideLoading();
+				if (res.success) {
+					uni.showToast({
+						title: '产品添加成功',
+						icon: 'success'
+					});
+					this.loadInventory(); // 重新加载库存
+					this.closeAddPopup();
+				} else {
+					uni.showToast({ title: res.message, icon: 'none' });
+				}
+			}).catch(error => {
+				uni.hideLoading();
+				uni.showToast({ title: '提交失败', icon: 'none' });
 			});
 		},
 
 		deleteInventory(index) {
+			const item = this.inventoryItems[index];
 			uni.showModal({
 				title: '确认删除',
 				content: '确定要删除这条库存记录吗？',
@@ -270,13 +468,110 @@ export default {
 				confirmColor: '#ff2d55',
 				success: (res) => {
 					if (res.confirm) {
-						this.inventoryItems.splice(index, 1);
-						uni.showToast({
-							title: '删除成功',
-							icon: 'success'
+						// === API调用 ===
+						uni.showLoading({ title: '删除中...' });
+						// 这里需要添加删除API调用
+						api.inventory.deleteInventory(item.id).then(res => {
+							uni.hideLoading();
+							if (res.success) {
+								this.inventoryItems.splice(index, 1);
+								uni.showToast({
+									title: '删除成功',
+									icon: 'success'
+								});
+							} else {
+								uni.showToast({ title: res.message, icon: 'none' });
+							}
+						}).catch(error => {
+							uni.hideLoading();
+							uni.showToast({ title: '删除失败', icon: 'none' });
 						});
 					}
 				}
+			});
+		},
+		
+		// 打开编辑库存弹窗
+		editInventory() {
+			// 从当前详情中获取库存数据
+			if (this.currentInventory.id) {
+				this.editProduct = {
+					id: this.currentInventory.id,
+					product: this.currentInventory.product || '',
+					code: this.currentInventory.code || '',
+					currentStock: this.currentInventory.currentStock || 0,
+					safeStock: this.currentInventory.safeStock || 0,
+					unit: this.currentInventory.unit || '件',
+					location: this.currentInventory.location || ''
+				};
+				// 关闭详情弹窗，打开编辑弹窗
+				this.$refs.popup.close();
+				this.$refs.editPopup.open('center');
+			}
+		},
+		
+		// 关闭编辑库存弹窗
+		closeEditPopup() {
+			this.$refs.editPopup.close();
+			// 重置编辑表单
+			this.editProduct = {
+				id: '',
+				product: '',
+				code: '',
+				currentStock: 0,
+				safeStock: 0,
+				unit: '件',
+				location: ''
+			};
+		},
+		
+		// 提交编辑库存
+		submitEditProduct() {
+			if (!this.editProduct.product.trim()) {
+				uni.showToast({
+					title: '请输入产品名称',
+					icon: 'none'
+				});
+				return;
+			}
+			if (this.editProduct.currentStock < 0) {
+				uni.showToast({
+					title: '当前库存不能为负数',
+					icon: 'none'
+				});
+				return;
+			}
+			if (this.editProduct.safeStock < 0) {
+				uni.showToast({
+					title: '安全库存不能为负数',
+					icon: 'none'
+				});
+				return;
+			}
+			
+			// === API调用 ===
+			uni.showLoading({ title: '提交中...' });
+			api.inventory.updateInventory(this.editProduct.id, {
+				product: this.editProduct.product,
+				currentStock: this.editProduct.currentStock,
+				safeStock: this.editProduct.safeStock,
+				unit: this.editProduct.unit,
+				location: this.editProduct.location
+			}).then(res => {
+				uni.hideLoading();
+				if (res.success) {
+					uni.showToast({
+						title: '编辑成功',
+						icon: 'success'
+					});
+					this.loadInventory(); // 重新加载库存
+					this.closeEditPopup();
+				} else {
+					uni.showToast({ title: res.message, icon: 'none' });
+				}
+			}).catch(error => {
+				uni.hideLoading();
+				uni.showToast({ title: '提交失败', icon: 'none' });
 			});
 		}
 	}

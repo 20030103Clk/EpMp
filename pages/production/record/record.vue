@@ -41,13 +41,47 @@
 			</view>
 			<view class="record-list">
 				<view class="record-item" v-for="record in filteredRecords" :key="record.id">
-					<view class="record-row main-info">
-						<text class="record-field product">{{ record.productName }}</text>
-						<text class="record-field equipment">{{ record.equipmentName }}</text>
+					<view class="record-header">
+						<text class="record-id">记录#{{ record.id }}</text>
+						<text class="record-product">{{ record.productName }}</text>
 					</view>
-					<view class="record-row secondary-info">
-						<text class="record-field time">{{ record.reportTime }}</text>
-						<text class="record-field operator">{{ record.reportPerson }}</text>
+					<view class="record-content">
+						<view class="content-row">
+							<text class="label">产品名称：</text>
+							<text class="value">{{ record.productName }}</text>
+						</view>
+						<view class="content-row">
+							<text class="label">产量：</text>
+							<text class="value">{{ record.quantity }} 件</text>
+						</view>
+						<view class="content-row">
+							<text class="label">合格数量：</text>
+							<text class="value pass">{{ record.qualifiedQuantity }} 件</text>
+						</view>
+						<view class="content-row">
+							<text class="label">不合格数量：</text>
+							<text class="value fail">{{ record.rejectQuantity }} 件</text>
+						</view>
+						<view class="content-row">
+							<text class="label">合格率：</text>
+							<text class="value pass">{{ record.qualifiedRate }}%</text>
+						</view>
+						<view class="content-row">
+							<text class="label">使用设备：</text>
+							<text class="value">{{ record.equipmentName }}</text>
+						</view>
+						<view class="content-row">
+							<text class="label">上报时间：</text>
+							<text class="value">{{ record.reportTime }}</text>
+						</view>
+						<view class="content-row">
+							<text class="label">操作人员：</text>
+							<text class="value">{{ record.reportPerson }}</text>
+						</view>
+						<view class="content-row" v-if="record.remark">
+							<text class="label">备注：</text>
+							<text class="value">{{ record.remark }}</text>
+						</view>
 					</view>
 				</view>
 				<view class="empty-state" v-if="filteredRecords.length === 0">
@@ -59,100 +93,86 @@
 </template>
 
 <script>
+const API_BASE_URL = 'http://localhost:3000/api';
+
+const api = {
+  record: {
+    getRecords: async (params = {}) => {
+      try {
+        const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+        const response = await uni.request({
+          url: `${API_BASE_URL}/record${queryString ? `?${queryString}` : ''}`,
+          method: 'GET'
+        });
+        console.log('Get records API response:', response);
+        if (response && (response[1] || response.data)) {
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        console.error('Get records error:', error);
+        throw error;
+      }
+    }
+  },
+  equipment: {
+    getEquipments: async (params = {}) => {
+      try {
+        const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+        const response = await uni.request({
+          url: `${API_BASE_URL}/equipment${queryString ? `?${queryString}` : ''}`,
+          method: 'GET'
+        });
+        console.log('Get equipments API response:', response);
+        if (response && (response[1] || response.data)) {
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        console.error('Get equipments error:', error);
+        throw error;
+      }
+    }
+  }
+};
 export default {
 	name: 'RecordPage',
 	data() {
 		return {
-			// 设备列表（用于过滤）
 			filterDevices: [
 				{ id: 0, name: '全部设备' },
 				{ id: 1, name: '生产线1' },
 				{ id: 2, name: '生产线2' },
 				{ id: 3, name: '生产线3' }
 			],
-			// 过滤条件
 			filters: {
 				productName: '',
-				equipmentId: 0,
+				equipmentName: '',
 				reportDate: ''
 			},
-			// 设备过滤索引
 			equipmentFilterIndex: 0,
-			// 生产记录数据
-			productionRecords: [
-				{
-					id: 'R001',
-					productName: '产品A',
-					quantity: 100,
-					rejectQuantity: 5,
-					qualifiedRate: 95,
-					equipmentId: 1,
-					equipmentName: '生产线1',
-					reportTime: '2026-01-19 09:30:00',
-					reportPerson: '张三',
-					remark: '正常生产'
-				},
-				{
-					id: 'R002',
-					productName: '产品A',
-					quantity: 120,
-					rejectQuantity: 3,
-					qualifiedRate: 97.5,
-					equipmentId: 1,
-					equipmentName: '生产线1',
-					reportTime: '2026-01-19 11:30:00',
-					reportPerson: '张三',
-					remark: '生产效率提升'
-				},
-				{
-					id: 'R003',
-					productName: '产品D',
-					quantity: 80,
-					rejectQuantity: 2,
-					qualifiedRate: 97.5,
-					equipmentId: 2,
-					equipmentName: '生产线2',
-					reportTime: '2026-01-19 10:00:00',
-					reportPerson: '李四',
-					remark: '设备运行稳定'
-				},
-				{
-					id: 'R004',
-					productName: '产品D',
-					quantity: 90,
-					rejectQuantity: 1,
-					qualifiedRate: 98.9,
-					equipmentId: 2,
-					equipmentName: '生产线2',
-					reportTime: '2026-01-19 14:00:00',
-					reportPerson: '李四',
-					remark: '无异常'
-				},
-				{
-					id: 'R005',
-					productName: '产品A',
-					quantity: 110,
-					rejectQuantity: 4,
-					qualifiedRate: 96.4,
-					equipmentId: 1,
-					equipmentName: '生产线1',
-					reportTime: '2026-01-19 16:00:00',
-					reportPerson: '张三',
-					remark: '接近目标产量'
-				}
-			]
+			productionRecords: []
 		};
 	},
 	computed: {
-		// 过滤后的记录
 		filteredRecords() {
-			return this.productionRecords.filter(record => {
+			// 确保 productionRecords 是一个数组
+			const records = Array.isArray(this.productionRecords) ? this.productionRecords : Object.values(this.productionRecords);
+			return records.filter(record => {
 				// 产品名称过滤
 				if (this.filters.productName && !record.productName.includes(this.filters.productName)) {
 					return false;
 				}
-				// 设备过滤
-				if (this.filters.equipmentId && record.equipmentId !== this.filters.equipmentId) {
+				// 设备过滤 - 当设备名称为空字符串或"全部设备"时不过滤
+				if (this.filters.equipmentName && this.filters.equipmentName.trim() && this.filters.equipmentName !== '全部设备' && record.equipmentName !== this.filters.equipmentName) {
 					return false;
 				}
 				// 日期过滤
@@ -167,38 +187,151 @@ export default {
 		}
 	},
 	onLoad() {
-		// 初始化数据
 		this.initData();
 	},
+	onShow() {
+		this.loadRecords();
+	},
 	methods: {
-		// 初始化数据
 		initData() {
-			// 从本地存储获取生产记录（如果有）
-			const savedRecords = uni.getStorageSync('productionRecords');
-			if (savedRecords && savedRecords.length > 0) {
-				this.productionRecords = savedRecords;
-			}
+			this.loadRecords();
+			this.loadEquipments();
 		},
-		
-		// 设备过滤变更
+
+		loadRecords() {
+			uni.showLoading({ title: '加载中...' });
+			api.record.getRecords().then(res => {
+				uni.hideLoading();
+				// 检查响应格式，确保 res.data 存在且有 list 属性
+				if (res && res.success && res.data && res.data.list) {
+					const records = res.data.list;
+					if (records.length > 0) {
+						this.productionRecords = records.map(record => {
+							const output = record.output || 0;
+							const qual = record.qual || 0;
+							const unqual = record.unqual || 0;
+							const qualifiedRate = output > 0 ? Math.round((qual / output) * 100 * 10) / 10 : 0;
+
+							return {
+								id: record.record_id,
+								productName: record.product || '未知产品',
+								quantity: output,
+								qualifiedQuantity: qual,
+								rejectQuantity: unqual,
+								qualifiedRate: qualifiedRate,
+								equipmentId: record.equio,
+								equipmentName: record.equio || '未知设备',
+								reportTime: record.date ? this.formatDate(record.date) : '未知时间',
+								reportPerson: record.name || '未知人员',
+								remark: record.md || ''
+							};
+						});
+					} else {
+						// 如果没有数据，设置为空数组
+						this.productionRecords = [];
+					}
+				} else {
+					uni.showToast({ title: '加载失败', icon: 'none' });
+				}
+			}).catch(error => {
+				uni.hideLoading();
+				uni.showToast({ title: '网络错误', icon: 'none' });
+			});
+		},
+
+		formatDate(dateStr) {
+			if (!dateStr) return '';
+			const date = new Date(dateStr);
+			const year = date.getFullYear();
+			const month = String(date.getMonth() + 1).padStart(2, '0');
+			const day = String(date.getDate()).padStart(2, '0');
+			const hours = String(date.getHours()).padStart(2, '0');
+			const minutes = String(date.getMinutes()).padStart(2, '0');
+			return `${year}-${month}-${day} ${hours}:${minutes}`;
+		},
+
+		loadEquipments() {
+			api.equipment.getEquipments().then(res => {
+				if (res.success) {
+					this.filterDevices = [
+						{ id: 0, name: '全部设备' },
+						...res.data.list.map(equip => ({
+							id: equip.equioment_id,
+							name: equip.equio
+						}))
+					];
+				}
+			});
+		},
+
 		onEquipmentFilterChange(e) {
 			this.equipmentFilterIndex = e.detail.value;
-			this.filters.equipmentId = this.filterDevices[this.equipmentFilterIndex].id;
+			// 当选择"全部设备"时，设置设备名称为空字符串，以便在查询时不传递设备过滤参数
+			this.filters.equipmentName = this.equipmentFilterIndex === 0 ? '' : this.filterDevices[this.equipmentFilterIndex].name;
+			// 当选择"全部设备"时，重新加载所有记录
+			if (this.equipmentFilterIndex === 0) {
+				this.searchRecords();
+			}
 		},
-		
-		// 日期选择变更
+
 		onDateChange(e) {
 			this.filters.reportDate = e.detail.value;
 		},
-		
-		// 重置过滤条件
+
 		resetFilters() {
 			this.filters = {
 				productName: '',
-				equipmentId: 0,
+				equipmentName: '',
 				reportDate: ''
 			};
 			this.equipmentFilterIndex = 0;
+		},
+
+		searchRecords() {
+			uni.showLoading({ title: '查询中...' });
+			const params = {};
+			if (this.filters.productName) params.product = this.filters.productName;
+			// 只有当 equipmentName 不为空字符串且不是"全部设备"时，才设置 params.equio
+			if (this.filters.equipmentName && this.filters.equipmentName.trim() && this.filters.equipmentName !== '全部设备') params.equio = this.filters.equipmentName;
+			if (this.filters.reportDate) params.date = this.filters.reportDate;
+
+			api.record.getRecords(params).then(res => {
+				uni.hideLoading();
+				// 检查响应格式，确保 res.data 存在且有 list 属性
+				if (res && res.success && res.data && res.data.list) {
+					const records = res.data.list;
+					if (records.length > 0) {
+						this.productionRecords = records.map(record => {
+							const output = record.output || 0;
+							const qual = record.qual || 0;
+							const unqual = record.unqual || 0;
+							const qualifiedRate = output > 0 ? Math.round((qual / output) * 100 * 10) / 10 : 0;
+
+							return {
+								id: record.record_id,
+								productName: record.product || '未知产品',
+								quantity: output,
+								qualifiedQuantity: qual,
+								rejectQuantity: unqual,
+								qualifiedRate: qualifiedRate,
+								equipmentId: record.equio,
+								equipmentName: record.equio || '未知设备',
+								reportTime: record.date ? this.formatDate(record.date) : '未知时间',
+								reportPerson: record.name || '未知人员',
+								remark: record.md || ''
+							};
+						});
+					} else {
+						// 如果没有数据，设置为空数组
+						this.productionRecords = [];
+					}
+				} else {
+					uni.showToast({ title: '查询失败', icon: 'none' });
+				}
+			}).catch(error => {
+				uni.hideLoading();
+				uni.showToast({ title: '网络错误', icon: 'none' });
+			});
 		}
 	}
 };
@@ -222,7 +355,6 @@ export default {
 	color: #1D2129;
 }
 
-/* 过滤区域样式 */
 .filter-section {
 	background-color: #FFFFFF;
 	border-radius: 16rpx;
@@ -318,7 +450,6 @@ export default {
 	background-color: #E5E6EB;
 }
 
-/* 记录列表样式 */
 .section {
 	margin-bottom: 30rpx;
 }
@@ -362,43 +493,58 @@ export default {
 	border-bottom: none;
 }
 
-.record-row {
+.record-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-bottom: 10rpx;
+	margin-bottom: 15rpx;
+	padding-bottom: 15rpx;
+	border-bottom: 1rpx solid #F0F2F5;
 }
 
-.record-row:last-child {
-	margin-bottom: 0;
-}
-
-.record-row.main-info {
-	font-weight: 600;
-}
-
-.record-field {
+.record-id {
 	font-size: 24rpx;
-	color: #1D2129;
-}
-
-.record-field.product {
-	font-size: 28rpx;
 	font-weight: bold;
 	color: #1D2129;
 }
 
-.record-field.equipment {
-	font-size: 26rpx;
+.record-product {
+	font-size: 28rpx;
+	font-weight: bold;
 	color: #1890FF;
 }
 
-.record-field.time, .record-field.operator {
-	font-size: 22rpx;
-	color: #86909C;
+.record-content {
+	display: flex;
+	flex-direction: column;
+	gap: 10rpx;
 }
 
-/* 空状态样式 */
+.content-row {
+	display: flex;
+	align-items: center;
+}
+
+.label {
+	font-size: 24rpx;
+	color: #86909C;
+	width: 140rpx;
+}
+
+.value {
+	font-size: 24rpx;
+	color: #1D2129;
+	flex: 1;
+}
+
+.value.pass {
+	color: #52C41A;
+}
+
+.value.fail {
+	color: #FF4D4F;
+}
+
 .empty-state {
 	padding: 60rpx 20rpx;
 	text-align: center;

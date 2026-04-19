@@ -21,6 +21,12 @@
 				<text class="stat-value">{{ computedPassCount }}</text>
 				<text class="stat-unit">件</text>
 			</view>
+			
+			<view class="stat-card">
+				<text class="stat-title">不合格数</text>
+				<text class="stat-value">{{ totalUnqualCount }}</text>
+				<text class="stat-unit">件</text>
+			</view>
 		</view>
 		
 		<view class="inspection-section">
@@ -52,42 +58,15 @@
 							</view>
 						</view>
 						<view class="inspection-actions">
-							<button class="delete-btn" @click="deleteInspection(index)">删除</button>
+							<button class="delete-btn" @click="deleteInspection(index)" v-if="isAdmin">删除</button>
 						</view>
 					</view>
 			</view>
 		</view>
 		
 		<view class="quality-actions">
-			<button class="action-btn" @click="openNewInspection">新建质检</button>
 			<button class="action-btn secondary" @click="openQualityReport">质量报告</button>
 		</view>
-		<uni-popup ref="newInspectionPopup">
-			<view class="simple-popup">
-				<view class="popup-title">新建质检</view>
-				<view class="popup-content">
-					<view class="form-item">
-						<text class="form-label">产品名称</text>
-						<input type="text" v-model="inspectionForm.product" class="form-input" placeholder="请输入产品名称" />
-					</view>
-					<view class="form-item">
-						<text class="form-label">检测数量</text>
-						<input type="number" v-model="inspectionForm.quantity" class="form-input" placeholder="请输入数量" />
-					</view>
-					<view class="form-item">
-						<text class="form-label">检测结果</text>
-						<radio-group :value="inspectionForm.result" @change="onResultChange">
-							<label><radio value="pass" /> 合格</label>
-							<label><radio value="fail" /> 不合格</label>
-						</radio-group>
-					</view>
-				</view>
-				<view class="popup-buttons">
-					<button type="default" @click="closeNewInspection">取消</button>
-					<button type="primary"  class="confirm-btn" @click="submitNewInspection">确定</button>
-				</view>
-			</view>
-		</uni-popup>
 		<uni-popup ref="qualityReportPopup">
 			<view class="simple-popup">
 				<view class="popup-title">质量报告</view>
@@ -105,8 +84,24 @@
 						<text class="report-value">{{ rejectCount }} 件</text>
 					</view>
 					<view class="report-item">
+						<text class="report-label">不合格数量</text>
+						<text class="report-value">{{ todayUnqualCount }} 件</text>
+					</view>
+					<view class="report-item">
 						<text class="report-label">合格率</text>
 						<text class="report-value highlight">{{ computedTodayPassRate }}%</text>
+					</view>
+					<view class="report-item">
+						<text class="report-label">按产品分类不合格数量</text>
+						<view class="unqual-by-product">
+							<view class="unqual-item" v-for="item in unqualByProduct" :key="item.product">
+								<text class="unqual-product">{{ item.product }}</text>
+								<text class="unqual-quantity">{{ item.unqual }} 件</text>
+							</view>
+							<view v-if="unqualByProduct.length === 0" class="no-data">
+								<text>暂无不合格数据</text>
+							</view>
+						</view>
 					</view>
 				</view>
 				<view class="popup-buttons">
@@ -118,155 +113,343 @@
 </template>
 
 <script>
+const API_BASE_URL = 'http://localhost:3000/api';
+
+// API 调用对象
+const api = {
+  quality: {
+    getQualities: async (params = {}) => {
+      try {
+        const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+        const response = await uni.request({
+          url: `${API_BASE_URL}/quality${queryString ? `?${queryString}` : ''}`,
+          method: 'GET'
+        });
+        console.log('GET qualities API response:', response);
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        console.error('Get qualities error:', error);
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    },
+    createQuality: async (data) => {
+      try {
+        const response = await uni.request({
+          url: `${API_BASE_URL}/quality`,
+          method: 'POST',
+          data: data,
+          header: {
+            'Content-Type': 'application/json; charset=utf-8'
+          }
+        });
+        console.log('Create quality API response:', response);
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        console.error('Create quality error:', error);
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    },
+    deleteQuality: async (id) => {
+      try {
+        const response = await uni.request({
+          url: `${API_BASE_URL}/quality/${id}`,
+          method: 'DELETE'
+        });
+        console.log('Delete quality API response:', response);
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        console.error('Delete quality error:', error);
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    }
+  },
+  record: {
+    getRecords: async (params = {}) => {
+      try {
+        const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+        const response = await uni.request({
+          url: `${API_BASE_URL}/record${queryString ? `?${queryString}` : ''}`,
+          method: 'GET'
+        });
+        console.log('Get records API response:', response);
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        console.error('Get records error:', error);
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    }
+  }
+};
+
+// 格式化日期为 YYYY-MM-DD 格式
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default {
 	data() {
-			return {
-				passRate: '',
-				todayInspections: 0,
-				rejectCount: 0,
-				inspectionForm: {
-					product: '',
-					quantity: '',
-					result: 'pass'
-				},
-				inspectionRecords: [
-				{
-					id: 'Q001',
-					product: '产品A',
-					quantity: 100,
-					result: 'pass',
-					resultText: '合格',
-					inspectionTime: '2026-01-11 14:30',
-				},
-				{
-					id: 'Q002',
-					product: '产品B',
-					quantity: 80,
-					result: 'pass',
-					resultText: '合格',
-					inspectionTime: '2026-01-11 13:15',
-				},
-				{
-					id: 'Q003',
-					product: '产品C',
-					quantity: 120,
-					result: 'fail',
-					resultText: '不合格',
-					inspectionTime: '2026-01-11 11:45',
-				},
-				{
-					id: 'Q004',
-					product: '产品A',
-					quantity: 90,
-					result: 'pass',
-					resultText: '合格',
-					inspectionTime: '2026-01-11 10:20',
-				},
-				{
-					id: 'Q005',
-					product: '产品D',
-					quantity: 60,
-					result: 'fail',
-					resultText: '不合格',
-					inspectionTime: '2026-01-11 09:30',
-				}
-			]
+		return {
+			passRate: '',
+			inspectionRecords: [],
+			productionRecords: []
 		};
 	},
 	computed: {
 		// 计算合格率
 		computedPassRate() {
-			if (this.inspectionRecords.length === 0) return 0;
-			const sum = this.inspectionRecords.reduce((acc, cur) => acc + cur.quantity, 0);
-			const passCount = this.inspectionRecords.filter(item => item.result === 'pass').reduce((acc, cur) => acc + cur.quantity, 0);
-			return sum > 0 ? (passCount / sum * 100).toFixed(2) : '0.00';
+			if (this.inspectionRecords.length === 0 && this.productionRecords.length === 0) return 0;
+			// 从质检记录和生产记录中计算总数量和合格数量
+			let totalQuantity = 0;
+			let passQuantity = 0;
+			
+			// 从质检记录中计算
+			totalQuantity += this.inspectionRecords.reduce((acc, cur) => acc + cur.quantity, 0);
+			passQuantity += this.inspectionRecords.filter(item => item.result === 'pass').reduce((acc, cur) => acc + cur.quantity, 0);
+			
+			// 从生产记录中计算
+			totalQuantity += this.productionRecords.reduce((acc, cur) => acc + cur.output, 0);
+			passQuantity += this.productionRecords.reduce((acc, cur) => acc + cur.qual, 0);
+			
+			return totalQuantity > 0 ? (passQuantity / totalQuantity * 100).toFixed(2) : '0.00';
 		},
 		// 计算今日合格率
 		computedTodayPassRate() {
 			const today = new Date().toLocaleDateString('zh-CN');
-			const todayRecords = this.inspectionRecords.filter(item => item.inspectionTime.startsWith(today));
-			if (todayRecords.length === 0) return 0;
-			const sum = todayRecords.reduce((acc, cur) => acc + cur.quantity, 0);
-			const passCount = todayRecords.filter(item => item.result === 'pass').reduce((acc, cur) => acc + cur.quantity, 0);
-			return sum > 0 ? (passCount / sum * 100).toFixed(2) : '0.00';
+			let totalQuantity = 0;
+			let passQuantity = 0;
+			
+			// 从质检记录中计算今日数据
+			const todayInspectionRecords = this.inspectionRecords.filter(item => item.inspectionTime.startsWith(today));
+			totalQuantity += todayInspectionRecords.reduce((acc, cur) => acc + cur.quantity, 0);
+			passQuantity += todayInspectionRecords.filter(item => item.result === 'pass').reduce((acc, cur) => acc + cur.quantity, 0);
+			
+			// 从生产记录中计算今日数据
+			const todayProductionRecords = this.productionRecords.filter(item => item.date && item.date.toString().startsWith(today));
+			totalQuantity += todayProductionRecords.reduce((acc, cur) => acc + cur.output, 0);
+			passQuantity += todayProductionRecords.reduce((acc, cur) => acc + cur.qual, 0);
+			
+			return totalQuantity > 0 ? (passQuantity / totalQuantity * 100).toFixed(2) : '0.00';
 		},
 		// 计算今日检测数量
 		todayInspections() {
 			const today = new Date().toLocaleDateString('zh-CN');
-			return this.inspectionRecords.filter(item => item.inspectionTime.startsWith(today)).reduce((acc, cur) => acc + cur.quantity, 0);
+			let totalQuantity = 0;
+			
+			// 从质检记录中计算今日数据
+			const todayInspectionRecords = this.inspectionRecords.filter(item => item.inspectionTime.startsWith(today));
+			totalQuantity += todayInspectionRecords.reduce((acc, cur) => acc + cur.quantity, 0);
+			
+			// 从生产记录中计算今日数据
+			const todayProductionRecords = this.productionRecords.filter(item => item.date && item.date.toString().startsWith(today));
+			totalQuantity += todayProductionRecords.reduce((acc, cur) => acc + cur.output, 0);
+			
+			return totalQuantity;
 		},
 		// 计算今日合格数量
 		rejectCount() {
 			const today = new Date().toLocaleDateString('zh-CN');
-			return this.inspectionRecords.filter(item => item.inspectionTime.startsWith(today) && item.result === 'pass').reduce((acc, cur) => acc + cur.quantity, 0);
+			let passQuantity = 0;
+			
+			// 从质检记录中计算今日数据
+			const todayInspectionRecords = this.inspectionRecords.filter(item => item.inspectionTime.startsWith(today));
+			passQuantity += todayInspectionRecords.filter(item => item.result === 'pass').reduce((acc, cur) => acc + cur.quantity, 0);
+			
+			// 从生产记录中计算今日数据
+			const todayProductionRecords = this.productionRecords.filter(item => item.date && item.date.toString().startsWith(today));
+			passQuantity += todayProductionRecords.reduce((acc, cur) => acc + cur.qual, 0);
+			
+			return passQuantity;
+		},
+		// 计算今日不合格数量
+		todayUnqualCount() {
+			const today = new Date().toLocaleDateString('zh-CN');
+			let unqualQuantity = 0;
+			
+			// 从质检记录中计算今日数据
+			const todayInspectionRecords = this.inspectionRecords.filter(item => item.inspectionTime.startsWith(today));
+			unqualQuantity += todayInspectionRecords.filter(item => item.result === 'fail').reduce((acc, cur) => acc + cur.quantity, 0);
+			
+			// 从生产记录中计算今日数据
+			const todayProductionRecords = this.productionRecords.filter(item => item.date && item.date.toString().startsWith(today));
+			unqualQuantity += todayProductionRecords.reduce((acc, cur) => acc + cur.unqual, 0);
+			
+			return unqualQuantity;
 		},
 		// 计算总检测数量
 		totalInspections() {
-			return this.inspectionRecords.reduce((acc, cur) => acc + cur.quantity, 0);
+			let totalQuantity = 0;
+			
+			// 从质检记录中计算
+			totalQuantity += this.inspectionRecords.reduce((acc, cur) => acc + cur.quantity, 0);
+			
+			// 从生产记录中计算
+			totalQuantity += this.productionRecords.reduce((acc, cur) => acc + cur.output, 0);
+			
+			return totalQuantity;
 		},
 		// 计算总合格数量
 		computedPassCount() {
-			return this.inspectionRecords.filter(item => item.result === 'pass').reduce((acc, cur) => acc + cur.quantity, 0);
+			let passQuantity = 0;
+			
+			// 从质检记录中计算
+			passQuantity += this.inspectionRecords.filter(item => item.result === 'pass').reduce((acc, cur) => acc + cur.quantity, 0);
+			
+			// 从生产记录中计算
+			passQuantity += this.productionRecords.reduce((acc, cur) => acc + cur.qual, 0);
+			
+			return passQuantity;
+		},
+		// 计算总不合格数量
+		totalUnqualCount() {
+			let unqualQuantity = 0;
+			
+			// 从质检记录中计算
+			const inspectionUnqual = this.inspectionRecords.reduce((acc, cur) => acc + (cur.unqual || 0), 0);
+			unqualQuantity += inspectionUnqual;
+			
+			// 从生产记录中计算
+			const productionUnqual = this.productionRecords.reduce((acc, cur) => acc + (cur.unqual || 0), 0);
+			unqualQuantity += productionUnqual;
+			
+			console.log('总不合格数量计算:', {
+				inspectionUnqual,
+				productionUnqual,
+				unqualQuantity,
+				productionRecordsLength: this.productionRecords.length
+			});
+			
+			return unqualQuantity;
+		},
+		// 按产品分类统计不合格数量
+		unqualByProduct() {
+			const unqualByProductMap = new Map();
+			
+			// 从质检记录中统计
+			this.inspectionRecords.forEach(record => {
+				const product = record.product || '未知产品';
+				const currentUnqual = unqualByProductMap.get(product) || 0;
+				unqualByProductMap.set(product, currentUnqual + (record.unqual || 0));
+			});
+			
+			// 从生产记录中统计
+			this.productionRecords.forEach(record => {
+				const product = record.product || '未知产品';
+				const currentUnqual = unqualByProductMap.get(product) || 0;
+				unqualByProductMap.set(product, currentUnqual + (record.unqual || 0));
+			});
+			
+			// 转换为数组
+			return Array.from(unqualByProductMap.entries()).map(([product, unqual]) => ({
+				product,
+				unqual
+			}));
+		},
+		// 判断是否为管理员
+		isAdmin() {
+			const userInfo = uni.getStorageSync('userInfo');
+			return userInfo && userInfo.level === 1;
 		}
 	},
+	onLoad() {
+		// 加载质检记录
+		this.loadQualityRecords();
+		// 加载生产记录，用于统计不合格数据
+		this.loadProductionRecords();
+	},
 	methods: {
-		// 打开新建质检弹出层
-		openNewInspection() {
-			// 重置表单数据
-			this.inspectionForm = {
-				product: '',
-				quantity: '',
-				result: 'pass'
-			};
-			this.$refs.newInspectionPopup.open('center');
+		// 加载质检记录
+		loadQualityRecords() {
+			console.log('开始加载质检记录...');
+			uni.showLoading({ title: '加载中...' });
+			api.quality.getQualities().then(res => {
+				console.log('Get qualities API response:', res);
+				uni.hideLoading();
+				if (res.success) {
+					console.log('质检记录数据:', res.data.list);
+					this.inspectionRecords = res.data.list.map(record => ({
+						id: record.quality_id,
+						product: record.product,
+						quantity: record.quantity,
+						qual: record.qual,
+						unqual: record.unqual,
+						result: record.qual > record.unqual ? 'pass' : 'fail',
+						resultText: record.qual > record.unqual ? '合格' : '不合格',
+						inspectionTime: record.inspection_time
+					}));
+					console.log('inspectionRecords 数组长度:', this.inspectionRecords.length);
+				} else {
+					console.error('加载质检记录失败:', res.message);
+					uni.showToast({ title: '加载失败', icon: 'none' });
+				}
+			}).catch(error => {
+				console.error('加载质检记录失败:', error);
+				uni.hideLoading();
+				uni.showToast({ title: '网络错误', icon: 'none' });
+			});
 		},
 		
-		// 关闭新建质检弹出层
-		closeNewInspection() {
-			this.$refs.newInspectionPopup.close();
-		},
-		
-		// 处理检测结果变化
-		onResultChange(e) {
-			this.inspectionForm.result = e.detail.value;
-		},
-		
-		// 提交新建质检
-		submitNewInspection() {
-			// 简单的表单验证
-			if (!this.inspectionForm.product.trim()) {
-				uni.showToast({ title: '请输入产品名称', icon: 'none' });
-				return;
-			}
-			if (!this.inspectionForm.quantity || isNaN(this.inspectionForm.quantity) || parseInt(this.inspectionForm.quantity) <= 0) {
-				uni.showToast({ title: '请输入有效的检测数量', icon: 'none' });
-				return;
-			}
-			
-			// 生成新的质检ID
-			const newId = 'Q' + (this.inspectionRecords.length + 1).toString().padStart(3, '0');
-			
-			// 构建新的质检记录
-			const newRecord = {
-				id: newId,
-				product: this.inspectionForm.product,
-				quantity: parseInt(this.inspectionForm.quantity),
-				result: this.inspectionForm.result,
-				resultText: this.inspectionForm.result === 'pass' ? '合格' : '不合格',
-				inspectionTime: new Date().toLocaleString('zh-CN'),
-				defects: []
-			};
-			
-			// 添加到质检记录列表
-			this.inspectionRecords.unshift(newRecord);
-			
-			// 关闭弹窗
-			this.closeNewInspection();
-			
-			// 显示成功提示
-			uni.showToast({ 
-				title: '质检记录添加成功', 
-				icon: 'success' 
+		// 加载生产记录，用于统计不合格数据
+		loadProductionRecords() {
+			// 传递一个大的 pageSize，确保获取所有生产记录
+			console.log('开始加载生产记录...');
+			api.record.getRecords({ pageSize: 1000 }).then(res => {
+				console.log('Get records API response:', res);
+				if (res.success) {
+					console.log('生产记录数据:', res.data.list);
+					this.productionRecords = res.data.list;
+					console.log('productionRecords 数组长度:', this.productionRecords.length);
+				} else {
+					console.error('加载生产记录失败:', res.message);
+					// 加载失败时，清空生产记录列表
+					this.productionRecords = [];
+				}
+			}).catch(error => {
+				console.error('加载生产记录失败:', error);
+				// 加载失败时，清空生产记录列表
+				this.productionRecords = [];
 			});
 		},
 		
@@ -276,24 +459,6 @@ export default {
 		
 		closeQualityReport() {
 			this.$refs.qualityReportPopup.close();
-		},
-		
-		deleteInspection(index) {
-			uni.showModal({
-				title: '确认删除',
-				content: '确定要删除这条质检记录吗？',
-				confirmText: '删除',
-				confirmColor: '#ff2d55',
-				success: (res) => {
-					if (res.confirm) {
-						this.inspectionRecords.splice(index, 1);
-						uni.showToast({
-							title: '删除成功',
-							icon: 'success'
-						});
-					}
-				}
-			});
 		}
 	}
 };
@@ -304,6 +469,8 @@ export default {
 	padding: 20rpx;
 	background-color: #f5f5f5;
 	min-height: 100vh;
+	padding-bottom: 140rpx; /* 为底部固定按钮留出空间 */
+	position: relative;
 }
 
 .header {
@@ -505,28 +672,31 @@ export default {
 }
 
 .quality-actions {
-	/*display: flex;
-	gap: 15rpx;*/
-	position: fixed; /* 固定定位核心属性，必加 */
-  	top: 86%;      /* 距离屏幕顶部的距离 */
-    left: 20rpx;     /* 距离屏幕左侧的距离 */
-  /* 可选补充，必加！防止被遮挡+样式错乱 */
-  	background: #fff;/* 加白色背景，防止和下方内容重叠穿透 */
-    bottom: 0; left: 0; width: 100%;
-}
+		display: flex;
+		gap: 15rpx;
+		padding: 20rpx;
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		background-color: #f5f5f5;
+		box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.1);
+		z-index: 100;
+		box-sizing: border-box;
+	}
 
-.action-btn {
-	flex: 1;
-	padding: 20rpx;
-	background-color: #007aff;
-	color: #fff;
-	border: none;
-	border-radius: 10rpx;
-	font-size: 28rpx;
-	font-weight: bold;
-	cursor: pointer;
-	transition: all 0.3s;
-}
+	.action-btn {
+		flex: 1;
+		padding: 20rpx;
+		background-color: #007aff;
+		color: #fff;
+		border: none;
+		border-radius: 10rpx;
+		font-size: 28rpx;
+		font-weight: bold;
+		cursor: pointer;
+		transition: all 0.3s;
+	}
 
 .action-btn.secondary {
 	background-color: #fff;
@@ -571,13 +741,23 @@ export default {
 }
 
 .simple-popup .form-input {
-	width: 100%;
-	padding: 16rpx;
-	border: 1rpx solid #ddd;
-	border-radius: 6rpx;
-	font-size: 26rpx;
-	box-sizing: border-box;
-}
+			width: 100%;
+			padding: 16rpx;
+			border: 1rpx solid #ddd;
+			border-radius: 6rpx;
+			font-size: 26rpx;
+			box-sizing: border-box;
+		}
+
+		.simple-popup .form-select {
+			width: 100%;
+			padding: 16rpx;
+			border: 1rpx solid #ddd;
+			border-radius: 6rpx;
+			font-size: 26rpx;
+			box-sizing: border-box;
+			background-color: #fff;
+		}
 
 .simple-popup radio-group {
 	display: flex;

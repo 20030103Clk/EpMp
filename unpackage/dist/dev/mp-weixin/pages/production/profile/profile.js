@@ -1,8 +1,22 @@
 "use strict";
 const common_vendor = require("../../../common/vendor.js");
-const uniIcons = () => "../../../uni_modules/uni-icons/components/uni-icons/uni-icons.js";
+const API_BASE_URL = "http://localhost:3000/api";
+const api = {
+  user: {
+    updateUser: async (id, data) => {
+      const response = await common_vendor.index.request({
+        url: `${API_BASE_URL}/user/${id}`,
+        method: "PUT",
+        data,
+        header: {
+          "Content-Type": "application/json"
+        }
+      });
+      return response[1].data;
+    }
+  }
+};
 const _sfc_main = {
-  components: { uniIcons },
   data() {
     return {
       username: "",
@@ -17,20 +31,54 @@ const _sfc_main = {
       common_vendor.index.redirectTo({ url: "/pages/production/login/login" });
     }
   },
+  computed: {
+    isAdmin() {
+      const userInfo = common_vendor.index.getStorageSync("userInfo");
+      return userInfo && userInfo.level === 1;
+    }
+  },
   methods: {
     close() {
       this.$refs.changePasswordPopup.close();
       this.$refs.editProfilePopup.close();
     },
     confirmChangePassword() {
-      common_vendor.index.showToast({ title: "修改密码功能开发中", icon: "none" });
-      this.$refs.changePasswordPopup.close();
+      common_vendor.index.showLoading({ title: "修改中..." });
+      api.user.updatePassword({
+        oldPassword: "旧密码",
+        newPassword: "新密码"
+      }).then((res) => {
+        common_vendor.index.hideLoading();
+        if (res.success) {
+          common_vendor.index.showToast({ title: "密码修改成功", icon: "success" });
+          this.$refs.changePasswordPopup.close();
+        } else {
+          common_vendor.index.showToast({ title: res.message, icon: "none" });
+        }
+      }).catch((error) => {
+        common_vendor.index.hideLoading();
+        common_vendor.index.showToast({ title: "修改失败", icon: "none" });
+      });
     },
     confirmEditProfile() {
-      this.username = this.user;
-      common_vendor.index.setStorageSync("userInfo", { username: this.username });
-      common_vendor.index.showToast({ title: "编辑资料成功", icon: "success" });
-      this.$refs.editProfilePopup.close();
+      common_vendor.index.showLoading({ title: "更新中..." });
+      const userInfo = common_vendor.index.getStorageSync("userInfo");
+      api.user.updateUser(userInfo.id, {
+        name: this.user
+      }).then((res) => {
+        common_vendor.index.hideLoading();
+        if (res.success) {
+          this.username = this.user;
+          common_vendor.index.setStorageSync("userInfo", { username: this.username, id: userInfo.id });
+          common_vendor.index.showToast({ title: "编辑资料成功", icon: "success" });
+          this.$refs.editProfilePopup.close();
+        } else {
+          common_vendor.index.showToast({ title: res.message, icon: "none" });
+        }
+      }).catch((error) => {
+        common_vendor.index.hideLoading();
+        common_vendor.index.showToast({ title: "更新失败", icon: "none" });
+      });
     },
     // 个人设置
     editProfile() {
@@ -84,37 +132,38 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return {
     a: common_vendor.t($data.username.charAt(0).toUpperCase()),
     b: common_vendor.t($data.username),
-    c: common_vendor.o($options.close),
-    d: common_vendor.p({
+    c: common_vendor.t($options.isAdmin ? "管理员" : "普通用户"),
+    d: common_vendor.o($options.close, "c3"),
+    e: common_vendor.p({
       type: "clear",
       size: "30"
     }),
-    e: $data.user,
-    f: common_vendor.o(($event) => $data.user = $event.detail.value),
-    g: common_vendor.o((...args) => $options.confirmEditProfile && $options.confirmEditProfile(...args)),
-    h: common_vendor.sr("editProfilePopup", "ade5d05f-0"),
-    i: common_vendor.p({
+    f: $data.user,
+    g: common_vendor.o(($event) => $data.user = $event.detail.value, "fe"),
+    h: common_vendor.o((...args) => $options.confirmEditProfile && $options.confirmEditProfile(...args), "f2"),
+    i: common_vendor.sr("editProfilePopup", "ade5d05f-0"),
+    j: common_vendor.p({
       ["mask-click"]: false,
       background: "rgba(0, 0, 0, 0.6)"
     }),
-    j: common_vendor.o((...args) => $options.editProfile && $options.editProfile(...args)),
-    k: common_vendor.o($options.close),
-    l: common_vendor.p({
+    k: common_vendor.o((...args) => $options.editProfile && $options.editProfile(...args), "7c"),
+    l: common_vendor.o($options.close, "13"),
+    m: common_vendor.p({
       type: "clear",
       size: "30"
     }),
-    m: common_vendor.o((...args) => $options.confirmChangePassword && $options.confirmChangePassword(...args)),
-    n: common_vendor.sr("changePasswordPopup", "ade5d05f-2"),
-    o: common_vendor.p({
+    n: common_vendor.o((...args) => $options.confirmChangePassword && $options.confirmChangePassword(...args), "1c"),
+    o: common_vendor.sr("changePasswordPopup", "ade5d05f-2"),
+    p: common_vendor.p({
       ["mask-click"]: false,
       background: "rgba(0, 0, 0, 0.6)"
     }),
-    p: common_vendor.o((...args) => $options.changePassword && $options.changePassword(...args)),
-    q: common_vendor.o((...args) => $options.notificationSettings && $options.notificationSettings(...args)),
-    r: common_vendor.o((...args) => $options.systemVersion && $options.systemVersion(...args)),
-    s: common_vendor.o((...args) => $options.checkUpdate && $options.checkUpdate(...args)),
-    t: common_vendor.o((...args) => $options.aboutSystem && $options.aboutSystem(...args)),
-    v: common_vendor.o((...args) => $options.logout && $options.logout(...args))
+    q: common_vendor.o((...args) => $options.changePassword && $options.changePassword(...args), "69"),
+    r: common_vendor.o((...args) => $options.notificationSettings && $options.notificationSettings(...args), "16"),
+    s: common_vendor.o((...args) => $options.systemVersion && $options.systemVersion(...args), "e2"),
+    t: common_vendor.o((...args) => $options.checkUpdate && $options.checkUpdate(...args), "8a"),
+    v: common_vendor.o((...args) => $options.aboutSystem && $options.aboutSystem(...args), "e2"),
+    w: common_vendor.o((...args) => $options.logout && $options.logout(...args), "a0")
   };
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-ade5d05f"]]);

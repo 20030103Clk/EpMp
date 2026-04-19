@@ -13,6 +13,7 @@ if (!Math) {
   "./pages/production/management/management.js";
   "./pages/production/plans/plans.js";
   "./pages/production/record/record.js";
+  "./pages/production/report/report.js";
 }
 const _sfc_main = {
   onLaunch: function() {

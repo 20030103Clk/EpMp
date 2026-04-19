@@ -52,29 +52,25 @@
 	color: #333;
 }
 .user-level.data-v-74f94787 {
-	font-size: 24rpx;
-	padding: 4rpx 12rpx;
-	border-radius: 15rpx;
-	font-weight: bold;
+				font-size: 24rpx;
+				padding: 4rpx 12rpx;
+				border-radius: 15rpx;
+				font-weight: bold;
 }
-.user-level.data-v-74f94787::before {
-	content: '[';
+.user-level.admin.data-v-74f94787 {
+				background-color: #e8f8f5;
+				color: #4cd964;
 }
-.user-level.data-v-74f94787::after {
-	content: ']';
-}
-.user-item:nth-child(odd) .user-level.data-v-74f94787 {
-	background-color: #e8f8f5;
-	color: #4cd964;
-}
-.user-item:nth-child(even) .user-level.data-v-74f94787 {
-	background-color: #e3f2fd;
-	color: #2196f3;
+.user-level.normal.data-v-74f94787 {
+				background-color: #e3f2fd;
+				color: #2196f3;
 }
 .user-actions.data-v-74f94787 {
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
+	flex-wrap: wrap;
+	gap: 15rpx;
 }
 .level-selector.data-v-74f94787 {
 	display: flex;
@@ -96,9 +92,35 @@
 	font-size: 24rpx;
 	color: #333;
 }
+.delete-btn.data-v-74f94787 {
+	padding: 8rpx 20rpx;
+	background-color: #ff2d55;
+	color: #fff;
+	border: none;
+	border-radius: 8rpx;
+	font-size: 24rpx;
+	margin-left: 20rpx;
+}
 .empty-tip.data-v-74f94787 {
 	text-align: center;
 	padding: 40rpx 0;
 	color: #999;
 	font-size: 24rpx;
+}
+.no-permission.data-v-74f94787 {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 100rpx 40rpx;
+}
+.no-permission-text.data-v-74f94787 {
+	font-size: 32rpx;
+	color: #ff4444;
+	font-weight: bold;
+	margin-bottom: 20rpx;
+}
+.no-permission-hint.data-v-74f94787 {
+	font-size: 26rpx;
+	color: #999;
 }

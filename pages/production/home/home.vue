@@ -58,13 +58,7 @@
 					</view>
 					<text class="menu-text">库存管理</text>
 				</view>
-				<view class="menu-item" @click="navigateTo('profile')">
-					<view class="menu-icon profile">
-						<uni-icons custom-prefix="iconfont" type="person-filled" size="35" class="profile-icon"></uni-icons>
-					</view>
-					<text class="menu-text">个人中心</text>
-				</view>
-				<view class="menu-item" @click="navigateTo('management')">
+				<view class="menu-item" @click="navigateTo('management')" v-if="isAdmin">
 					<view class="menu-icon profile">
 						<uni-icons custom-prefix="iconfont" type="staff-filled" size="35" class="profile-icon"></uni-icons>
 					</view>
@@ -76,7 +70,7 @@
 		<view class="recent-section">
 			<view class="section-header">
 				<text class="section-title">最近订单</text>
-				<text class="more" @click="navigateTo('plans')">查看全部</text>
+				<text class="more" @click="navigateTo('plan')">查看全部</text>
 			</view>
 			<view class="order-list">
 				<view class="order-item" v-for="(order, index) in recentOrders" :key="index">
@@ -95,31 +89,124 @@
 </template>
 
 <script>
+const API_BASE_URL = 'http://localhost:3000/api';
+
+const api = {
+  plan: {
+    getPlans: async (params = {}) => {
+      try {
+        const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+        const response = await uni.request({
+          url: `${API_BASE_URL}/plan${queryString ? `?${queryString}` : ''}`,
+          method: 'GET'
+        });
+        console.log('Get plans API response:', response);
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        console.error('Get plans error:', error);
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    }
+  },
+  record: {
+    getRecords: async (params = {}) => {
+      try {
+        const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+        const response = await uni.request({
+          url: `${API_BASE_URL}/record${queryString ? `?${queryString}` : ''}`,
+          method: 'GET'
+        });
+        console.log('Get records API response:', response);
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        console.error('Get records error:', error);
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    }
+  }
+};
 export default {
 	data() {
 		return {
-			username: '',
-			recentOrders: [
-				{ id: '1001', product: '产品A', quantity: 500, status: 'processing', statusText: '生产中' },
-				{ id: '1002', product: '产品B', quantity: 300, status: 'pending', statusText: '待生产' },
-				{ id: '1003', product: '产品C', quantity: 800, status: 'completed', statusText: '已完成' },
-				{ id: '1004', product: '产品D', quantity: 200, status: 'quality', statusText: '质检中' }
-			]
+			recentOrders: []
 		};
 	},
+	computed: {
+		username() {
+			const userInfo = uni.getStorageSync('userInfo');
+			return userInfo ? userInfo.username : '未登录';
+		},
+		isAdmin() {
+			const userInfo = uni.getStorageSync('userInfo');
+			return userInfo && userInfo.level === 1;
+		}
+	},
 	onLoad() {
-		// 检查登录状态
-		this.checkLoginStatus();
+		// 加载数据
+		this.loadData();
+	},
+	onShow() {
+		// 每次页面显示时重新加载数据，确保删除计划后能更新显示
+		this.loadData();
 	},
 	methods: {
 		checkLoginStatus() {
 			const userInfo = uni.getStorageSync('userInfo');
-			if (userInfo) {
-				this.username = userInfo.username;
-			} else {
-				// 未登录，跳转到登录页面
-				//uni.redirectTo({ url: '/pages/production/login/login' });
+			if (!userInfo) {
+				uni.redirectTo({ url: '/pages/production/login/login' });
 			}
+		},
+		loadData() {
+			// 加载最近订单
+			this.loadRecentOrders();
+			// 加载统计数据
+			this.loadStats();
+		},
+		// 加载最近订单
+		loadRecentOrders() {
+			api.plan.getPlans({ page: 1, pageSize: 4 }).then(res => {
+				if (res.success) {
+					this.recentOrders = res.data.list.map(plan => ({
+						id: plan.plan_id,
+						product: plan.product,
+						quantity: plan.quantity,
+						status: plan.status,
+						statusText: plan.statusText
+					}));
+				}
+			});
+		},
+		// 加载统计数据
+		loadStats() {
+			// 这里可以根据需要调用不同的API获取统计数据
+			// 今日产量
+			api.record.getRecords({ date: new Date().toISOString().split('T')[0] }).then(res => {
+				if (res.success) {
+					const totalOutput = res.data.list.reduce((sum, record) => sum + record.output, 0);
+					// 更新今日产量
+					// this.stats.todayOutput = totalOutput;
+				}
+			});
 		},
 		navigateTo(page) {
 			uni.navigateTo({

@@ -130,11 +130,11 @@
 						<input type="number" v-model.number="outputForm.rejectQuantity" class="form-input" placeholder="请输入不合格数量" />
 					</view>
 					<view class="form-item">
-						<text class="form-label">使用设备</text>
-						<picker class="form-picker" @change="onEquipmentChange" :value="equipmentIndex" :range="runningDevices" :range-key="'name'">
-							<view class="picker-value">{{ runningDevices[equipmentIndex]?.name || '请选择设备' }}</view>
-						</picker>
-					</view>
+					<text class="form-label">使用设备</text>
+					<picker class="form-picker" @change="onEquipmentChange" :value="equipmentIndex" :range="allDevices" :range-key="'name'">
+						<view class="picker-value">{{ allDevices[equipmentIndex]?.name || '请选择设备' }}</view>
+					</picker>
+				</view>
 					<view class="form-item">
 						<text class="form-label">备注</text>
 						<textarea v-model="outputForm.remark" class="form-textarea" placeholder="请输入备注信息" />
@@ -150,70 +150,168 @@
 </template>
 
 <script>
+const API_BASE_URL = 'http://localhost:3000/api';
+
+// API 调用对象
+const api = {
+  equipment: {
+    getEquipments: async (params = {}) => {
+      try {
+        const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+        const response = await uni.request({
+          url: `${API_BASE_URL}/equipment${queryString ? `?${queryString}` : ''}`,
+          method: 'GET'
+        });
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    }
+  },
+  plan: {
+    getPlans: async (params = {}) => {
+      try {
+        const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+        const response = await uni.request({
+          url: `${API_BASE_URL}/plan${queryString ? `?${queryString}` : ''}`,
+          method: 'GET'
+        });
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    },
+    updatePlan: async (id, data) => {
+      try {
+        const response = await uni.request({
+          url: `${API_BASE_URL}/plan/${id}`,
+          method: 'PUT',
+          data: data,
+          header: {
+            'Content-Type': 'application/json; charset=utf-8'
+          }
+        });
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    }
+  },
+  record: {
+    createRecord: async (data) => {
+      try {
+        const response = await uni.request({
+          url: `${API_BASE_URL}/record`,
+          method: 'POST',
+          data: data,
+          header: {
+            'Content-Type': 'application/json; charset=utf-8'
+          }
+        });
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    }
+  },
+  quality: {
+    createQuality: async (data) => {
+      try {
+        const response = await uni.request({
+          url: `${API_BASE_URL}/quality`,
+          method: 'POST',
+          data: data,
+          header: {
+            'Content-Type': 'application/json; charset=utf-8'
+          }
+        });
+        // 检查响应格式
+        if (response && (response[1] || response.data)) {
+          // 处理不同格式的响应
+          if (response[1]) {
+            return response[1].data;
+          } else if (response.data) {
+            return response.data;
+          }
+        }
+        throw new Error('Invalid response from server');
+      } catch (error) {
+        // 重新抛出错误，让调用者处理
+        throw error;
+      }
+    }
+  }
+};
+
+// 格式化日期为 YYYY-MM-DD 格式
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default {
 	name: 'ExecutionPage',
 	computed: {
-		// 运行中的设备列表
-		runningDevices() {
-			return this.devices.filter(device => device.status === 'running');
+		// 所有设备列表（用于选择）
+		allDevices() {
+			return this.devices;
 		}
 	},
 	data() {
-		// 从生产计划页面获取对应的数据结构
-		const productionPlans = [
-			{ id: 'P001', product: '产品A', quantity: 500, startDate: '2026-01-11', endDate: '2026-01-15', status: 'processing', statusText: '生产中', progress: 60 },
-			{ id: 'P002', product: '产品B', quantity: 300, startDate: '2026-01-12', endDate: '2026-01-16', status: 'pending', statusText: '待生产', progress: 0 },
-			{ id: 'P003', product: '产品C', quantity: 800, startDate: '2026-01-10', endDate: '2026-01-14', status: 'completed', statusText: '已完成', progress: 100 },
-			{ id: 'P004', product: '产品D', quantity: 200, startDate: '2026-01-11', endDate: '2026-01-13', status: 'processing', statusText: '生产中', progress: 85 },
-			{ id: 'P005', product: '产品E', quantity: 600, startDate: '2026-01-13', endDate: '2026-01-17', status: 'pending', statusText: '待生产', progress: 0 }
-		];
-		
-		// 计算实时数据
-		const processingPlans = productionPlans.filter(plan => plan.status === 'processing');
-		const totalPlanQuantity = processingPlans.reduce((sum, plan) => sum + plan.quantity, 0);
-		const totalCompleted = processingPlans.reduce((sum, plan) => sum + (plan.quantity * plan.progress / 100), 0);
-		
 		return {
 			// 实时生产数据（基于生产计划计算）
 			realtimeData: {
-				currentProduction: Math.round(totalCompleted),
-				productionEfficiency: totalCompleted/8,
-				dailyTarget: totalPlanQuantity,
-				completionRate: Math.round((totalCompleted / totalPlanQuantity) * 100) || 0
+				currentProduction: 0,
+				productionEfficiency: 0,
+				dailyTarget: 0,
+				completionRate: 0
 			},
 			// 生产任务列表（与生产计划对应）
-			productionTasks: productionPlans.map(plan => ({
-				id: plan.id,
-				name: plan.product,
-				planQuantity: plan.quantity,
-				completedQuantity: Math.round(plan.quantity * plan.progress / 100),
-				status: plan.status,
-				statusText: plan.statusText
-			})),
+			productionTasks: [],
 			// 设备状态信息
-			devices: [
-				{
-					id: 1,
-					name: '生产线1',
-					status: 'running',
-					statusText: '运行中',
-					params: '产品A'
-				},
-				{
-					id: 2,
-					name: '生产线2',
-					status: 'running',
-					statusText: '运行中',
-					params: '产品D'
-				},
-				{
-					id: 3,
-					name: '生产线3',
-					status: 'idle',
-					statusText: '待机中',
-					params: '准备生产产品B'
-				}
-			],
+			devices: [],
 			// 上报产量表单数据
 			selectedTask: null,
 			outputForm: {
@@ -233,19 +331,59 @@ export default {
 	methods: {
 		// 初始化数据
 		initData() {
-			// 从本地存储或API获取生产计划数据
-			const savedPlans = uni.getStorageSync('productionPlan');
-			if (savedPlans && savedPlans.length > 0) {
-				// 这里可以根据保存的计划更新当前数据
-				console.log('已加载保存的生产计划:', savedPlans);
-			}
+			// 加载设备列表
+			this.loadDevices();
+			// 加载生产计划
+			this.loadProductionPlans();
 		},
+		
+		// 加载设备列表
+		loadDevices() {
+			api.equipment.getEquipments().then(res => {
+				console.log('设备列表响应:', res);
+				if (res && res.success && res.data && res.data.list) {
+					this.devices = res.data.list.map(equip => ({
+						id: equip.equioment_id,
+						name: equip.equio,
+						status: equip.status === '运行中' || equip.status === '运行' ? 'running' : 'idle',
+						statusText: equip.status,
+						params: equip.statusText || '正常运行'
+					}));
+					console.log('设备列表已加载:', this.devices);
+				}
+			}).catch(error => {
+				console.error('加载设备列表失败:', error);
+			});
+		},
+		
+		// 加载生产计划
+		loadProductionPlans() {
+			api.plan.getPlans().then(res => {
+				console.log('生产计划响应:', res);
+				if (res && res.success && res.data && res.data.list) {
+					this.productionTasks = res.data.list.map(plan => ({
+						id: plan.plan_id,
+						name: plan.product,
+						planQuantity: plan.quantity,
+						completedQuantity: Math.round(plan.quantity * plan.progress / 100),
+						status: plan.status,
+						statusText: plan.statusText
+					}));
+					console.log('生产计划已加载:', this.productionTasks);
+					// 计算实时数据
+					this.calculateRealtimeData();
+				}
+			}).catch(error => {
+				console.error('加载生产计划失败:', error);
+			});
+		},
+		
 		// 设备选择变更
 		onEquipmentChange(e) {
 			this.equipmentIndex = e.detail.value;
-			// 更新设备ID到表单
-			if (this.runningDevices[this.equipmentIndex]) {
-				this.outputForm.equipmentId = this.runningDevices[this.equipmentIndex].id;
+			// 更新设备名称到表单（外键约束要求使用设备名称）
+			if (this.allDevices[this.equipmentIndex]) {
+				this.outputForm.equipmentId = this.allDevices[this.equipmentIndex].name;
 			}
 		},
 		// 报告异常
@@ -266,7 +404,7 @@ export default {
 			this.outputForm = {
 				quantity: 0,
 				rejectQuantity: 0,
-				equipmentId: this.runningDevices.length > 0 ? this.runningDevices[0].id : '',
+				equipmentId: this.allDevices.length > 0 ? this.allDevices[0].name : '',
 				remark: ''
 			};
 			// 初始化设备选择索引
@@ -293,75 +431,97 @@ export default {
 				return;
 			}
 			
-			// 更新任务完成数量
-			const taskIndex = this.productionTasks.findIndex(t => t.id === this.selectedTask.id);
-			if (taskIndex !== -1) {
-				this.productionTasks[taskIndex].completedQuantity += this.outputForm.quantity;
-				// 如果完成数量超过计划数量，设置为计划数量
-				if (this.productionTasks[taskIndex].completedQuantity > this.productionTasks[taskIndex].planQuantity) {
-					this.productionTasks[taskIndex].completedQuantity = this.productionTasks[taskIndex].planQuantity;
+			// === API调用 ===
+			uni.showLoading({ title: '提交中...' });
+			const qualified = this.outputForm.quantity - this.outputForm.rejectQuantity;
+
+			// 从本地存储获取用户信息
+			const userInfo = uni.getStorageSync('userInfo');
+			const username = userInfo && userInfo.username ? userInfo.username : '默认用户';
+
+			api.record.createRecord({
+				plan_id: this.selectedTask.id,
+				product: this.selectedTask.name,
+				output: this.outputForm.quantity,
+				unqual: this.outputForm.rejectQuantity,
+				qual: qualified,
+				equio: this.outputForm.equipmentId,
+				date: formatDate(new Date()),
+				name: username,
+				md: this.outputForm.remark
+			}).then(res => {
+				uni.hideLoading();
+				console.log('创建记录响应:', JSON.stringify(res));
+				if (res && res.success && res.data && res.data.insertId) {
+					// 创建质检记录
+					const recordId = res.data.insertId;
+					console.log('创建质检记录，record_id:', recordId);
+					api.quality.createQuality({
+						record_id: recordId,
+						product: this.selectedTask.name,
+						quantity: this.outputForm.quantity,
+						qual: qualified,
+						unqual: this.outputForm.rejectQuantity,
+						inspection_time: formatDate(new Date())
+					}).then(qualityRes => {
+						console.log('创建质检记录响应:', JSON.stringify(qualityRes));
+					}).catch(qualityError => {
+						console.error('创建质检记录失败:', qualityError);
+					});
+					
+					// 更新任务完成数量
+					const taskIndex = this.productionTasks.findIndex(t => t.id === this.selectedTask.id);
+					if (taskIndex !== -1) {
+						// 计算新的完成数量
+						const newCompletedQuantity = this.productionTasks[taskIndex].completedQuantity + this.outputForm.quantity;
+						// 计算新的进度
+						const newProgress = Math.round((newCompletedQuantity / this.productionTasks[taskIndex].planQuantity) * 100);
+						// 确保进度不超过100%
+						const finalProgress = Math.min(newProgress, 100);
+						// 确保完成数量不超过计划数量
+						const finalCompletedQuantity = Math.min(newCompletedQuantity, this.productionTasks[taskIndex].planQuantity);
+						// 更新本地任务数据
+						this.productionTasks[taskIndex].completedQuantity = finalCompletedQuantity;
+						
+						// 检查是否完成
+						let newStatus = this.productionTasks[taskIndex].status;
+						let newStatusText = this.productionTasks[taskIndex].statusText;
+						if (finalProgress === 100) {
+							newStatus = 'completed';
+							newStatusText = '已完成';
+						}
+						
+						// 更新后端计划数据
+						api.plan.updatePlan(this.selectedTask.id, {
+							progress: finalProgress,
+							status: newStatus,
+							statusText: newStatusText
+						}).catch(error => {
+							console.error('更新计划失败:', error);
+						});
+						
+						// 更新本地任务状态
+						this.productionTasks[taskIndex].status = newStatus;
+						this.productionTasks[taskIndex].statusText = newStatusText;
+					}
+					
+					// 显示成功提示
+					uni.showToast({ title: '产量上报成功', icon: 'success' });
+					
+					// 关闭表单
+					this.closeOutputPopup();
+					
+					// 更新实时数据
+					this.calculateRealtimeData();
+				} else {
+					const errorMsg = res ? res.message : '提交失败';
+					uni.showToast({ title: errorMsg, icon: 'none' });
 				}
-				// 如果完成数量达到计划数量，更新状态为已完成
-				if (this.productionTasks[taskIndex].completedQuantity >= this.productionTasks[taskIndex].planQuantity) {
-					this.productionTasks[taskIndex].status = 'completed';
-					this.productionTasks[taskIndex].statusText = '已完成';
-				}
-			}
-			
-			// 保存生产记录
-			this.saveProductionRecord();
-			
-			// 保存数据到本地存储
-			uni.setStorageSync('productionTasks', this.productionTasks);
-			
-			// 显示成功提示
-			uni.showToast({ title: '产量上报成功', icon: 'success' });
-			
-			// 关闭表单
-			this.closeOutputPopup();
-			
-			// 更新实时数据
-			this.calculateRealtimeData();
-		},
-		
-		// 保存生产记录
-		saveProductionRecord() {
-			// 获取当前时间
-			const now = new Date();
-			const reportTime = now.toISOString().slice(0, 19).replace('T', ' ');
-			
-			// 计算合格率
-			const totalQuantity = this.outputForm.quantity;
-			const qualifiedQuantity = totalQuantity - this.outputForm.rejectQuantity;
-			const qualifiedRate = totalQuantity > 0 ? Math.round((qualifiedQuantity / totalQuantity) * 100) : 0;
-			
-			// 获取设备名称
-			const equipment = this.devices.find(device => device.id === this.outputForm.equipmentId);
-			const equipmentName = equipment ? equipment.name : '未知设备';
-			
-			// 生成记录ID
-			const recordId = 'R' + now.getTime().toString().slice(-6);
-			
-			// 创建生产记录
-			const newRecord = {
-				id: recordId,
-				productName: this.selectedTask.name,
-				quantity: this.outputForm.quantity,
-				rejectQuantity: this.outputForm.rejectQuantity,
-				qualifiedRate: qualifiedRate,
-				equipmentId: this.outputForm.equipmentId,
-				equipmentName: equipmentName,
-				reportTime: reportTime,
-				reportPerson: '当前用户', // 实际应用中应从登录信息获取
-				remark: this.outputForm.remark
-			};
-			
-			// 从本地存储获取现有记录
-			const existingRecords = uni.getStorageSync('productionRecords') || [];
-			// 添加新记录
-			existingRecords.unshift(newRecord); // 新记录添加到最前面
-			// 保存回本地存储
-			uni.setStorageSync('productionRecords', existingRecords);
+			}).catch(error => {
+				uni.hideLoading();
+				console.error('提交产量上报失败:', error);
+				uni.showToast({ title: '提交失败', icon: 'none' });
+			});
 		},
 		
 		// 计算实时数据

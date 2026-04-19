@@ -168,11 +168,11 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     e: $options.placeholderText,
     f: $props.maxlength,
     g: $props.textColor,
-    h: common_vendor.o((...args) => $options.confirm && $options.confirm(...args)),
-    i: common_vendor.o((...args) => $options.blur && $options.blur(...args)),
-    j: common_vendor.o((...args) => $options.emitFocus && $options.emitFocus(...args)),
+    h: common_vendor.o((...args) => $options.confirm && $options.confirm(...args), "5d"),
+    i: common_vendor.o((...args) => $options.blur && $options.blur(...args), "27"),
+    j: common_vendor.o((...args) => $options.emitFocus && $options.emitFocus(...args), "db"),
     k: $data.searchVal,
-    l: common_vendor.o(($event) => $data.searchVal = $event.detail.value)
+    l: common_vendor.o(($event) => $data.searchVal = $event.detail.value, "ca")
   } : {
     m: common_vendor.t($props.placeholder)
   }, {
@@ -183,15 +183,15 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       size: "20",
       type: "clear"
     }),
-    p: common_vendor.o((...args) => $options.clear && $options.clear(...args))
+    p: common_vendor.o((...args) => $options.clear && $options.clear(...args), "1e")
   } : {}, {
     q: $props.radius + "px",
     r: $props.bgColor,
-    s: common_vendor.o((...args) => $options.searchClick && $options.searchClick(...args)),
+    s: common_vendor.o((...args) => $options.searchClick && $options.searchClick(...args), "cb"),
     t: $props.cancelButton === "always" || $data.show && $props.cancelButton === "auto"
   }, $props.cancelButton === "always" || $data.show && $props.cancelButton === "auto" ? {
     v: common_vendor.t($options.cancelTextI18n),
-    w: common_vendor.o((...args) => $options.cancel && $options.cancel(...args))
+    w: common_vendor.o((...args) => $options.cancel && $options.cancel(...args), "ae")
   } : {});
 }
 const Component = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);

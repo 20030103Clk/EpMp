@@ -10,7 +10,7 @@
 			</view>
 			<view class="user-details">
 				<text class="user-name">{{ username }}</text>
-				<text class="user-role">管理员</text>
+				<text class="user-role">{{ isAdmin ? '管理员' : '普通用户' }}</text>
 			</view>
 		</view>
 		
@@ -84,9 +84,24 @@
 </template>
 
 <script>
-import uniIcons from '../../../uni_modules/uni-icons/components/uni-icons/uni-icons.vue';
+const API_BASE_URL = 'http://localhost:3000/api';
+
+const api = {
+  user: {
+    updateUser: async (id, data) => {
+      const response = await uni.request({
+        url: `${API_BASE_URL}/user/${id}`,
+        method: 'PUT',
+        data,
+        header: {
+          'Content-Type': 'application/json'
+        }
+      });
+      return response[1].data;
+    }
+  }
+};
 export default {
-  components: { uniIcons },
 	data() {
 		return {
 			username: '',
@@ -103,20 +118,56 @@ export default {
 			uni.redirectTo({ url: '/pages/production/login/login' });
 		}
 	},
+	computed: {
+		isAdmin() {
+			const userInfo = uni.getStorageSync('userInfo');
+			return userInfo && userInfo.level === 1;
+		}
+	},
 	methods: {
 		close() {
 			this.$refs.changePasswordPopup.close();
 			this.$refs.editProfilePopup.close();
 		},
 		confirmChangePassword() {
-			uni.showToast({ title: '修改密码功能开发中', icon: 'none' });
-			this.$refs.changePasswordPopup.close();
+			uni.showLoading({ title: '修改中...' });
+			// 这里可以添加修改密码的API调用
+			api.user.updatePassword({
+				oldPassword: '旧密码',
+				newPassword: '新密码'
+			}).then(res => {
+				uni.hideLoading();
+				if (res.success) {
+					uni.showToast({ title: '密码修改成功', icon: 'success' });
+					this.$refs.changePasswordPopup.close();
+				} else {
+					uni.showToast({ title: res.message, icon: 'none' });
+				}
+			}).catch(error => {
+				uni.hideLoading();
+				uni.showToast({ title: '修改失败', icon: 'none' });
+			});
 		},
 		confirmEditProfile() {
-			this.username = this.user;
-			uni.setStorageSync('userInfo', { username: this.username });
-			uni.showToast({ title: '编辑资料成功', icon: 'success' });
-			this.$refs.editProfilePopup.close();
+			uni.showLoading({ title: '更新中...' });
+			// 这里可以添加更新用户信息的API调用
+			const userInfo = uni.getStorageSync('userInfo');
+			api.user.updateUser(userInfo.id, {
+				name: this.user
+			}).then(res => {
+				uni.hideLoading();
+				if (res.success) {
+					this.username = this.user;
+					uni.setStorageSync('userInfo', { username: this.username, id: userInfo.id });
+					uni.showToast({ title: '编辑资料成功', icon: 'success' });
+					this.$refs.editProfilePopup.close();
+				} else {
+					uni.showToast({ title: res.message, icon: 'none' });
+				}
+			}).catch(error => {
+				uni.hideLoading();
+				uni.showToast({ title: '更新失败', icon: 'none' });
+			});
 		},
 		// 个人设置
 		editProfile() {

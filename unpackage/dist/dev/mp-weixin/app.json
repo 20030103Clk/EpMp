@@ -9,7 +9,8 @@
     "pages/production/inventory/inventory",
     "pages/production/management/management",
     "pages/production/plans/plans",
-    "pages/production/record/record"
+    "pages/production/record/record",
+    "pages/production/report/report"
   ],
   "window": {
     "pageOrientation": "portrait",
@@ -17,6 +18,32 @@
     "navigationBarTextStyle": "white",
     "navigationBarBackgroundColor": "#007AFF",
     "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#999",
+    "selectedColor": "#007AFF",
+    "backgroundColor": "#fff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/production/home/home",
+        "text": "首页",
+        "iconPath": "static/home.png",
+        "selectedIconPath": "static/home-active.png"
+      },
+      {
+        "pagePath": "pages/production/report/report",
+        "text": "生产报表",
+        "iconPath": "static/templateHL.png",
+        "selectedIconPath": "static/templateHL.png"
+      },
+      {
+        "pagePath": "pages/production/profile/profile",
+        "text": "个人中心",
+        "iconPath": "static/logo.png",
+        "selectedIconPath": "static/logo.png"
+      }
+    ]
   },
   "permission": {
     "scope.userLocation": {
