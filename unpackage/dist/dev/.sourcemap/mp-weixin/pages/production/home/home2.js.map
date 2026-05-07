@@ -1,0 +1,1 @@
+{"version":3,"file":"home2.js","sources":["../../HBuilderX.4.87.2025121004/HBuilderX/plugins/uniapp-cli-vite/uniPage:/cGFnZXNccHJvZHVjdGlvblxob21lXGhvbWUudnVl"],"sourcesContent":["import MiniProgramPage from 'C:/Users/28649/Desktop/EPMP/EPMP/pages/production/home/home.vue'\nwx.createPage(MiniProgramPage)"],"names":["MiniProgramPage"],"mappings":";;AACA,GAAG,WAAWA,KAAe,eAAA;"}

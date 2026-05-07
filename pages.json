@@ -1,0 +1,116 @@
+{
+	"vueVersion": "3",
+	"pages": [
+		{
+			"path": "pages/production/splash/splash",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/production/login/login",
+			"style": {
+				"navigationBarTitleText": "登录"
+			}
+		},
+		{
+			"path": "pages/production/home/home",
+			"style": {
+				"navigationBarTitleText": "生产管理首页"
+			}
+		},
+		{
+			"path": "pages/production/plan/plan",
+			"style": {
+				"navigationBarTitleText": "生产计划"
+			}
+		},
+		{
+			"path": "pages/production/execution/execution",
+			"style": {
+				"navigationBarTitleText": "工序进度"
+			}
+		},
+		{
+			"path": "pages/production/profile/profile",
+			"style": {
+				"navigationBarTitleText": "个人中心"
+			}
+		},
+		{
+			"path": "pages/production/quality/quality",
+			"style": {
+				"navigationBarTitleText": "质量检验登记"
+			}
+		},
+		{
+			"path": "pages/production/inventory/inventory",
+			"style": {
+				"navigationBarTitleText": "库存管理"
+			}
+		},
+		{
+			"path": "pages/production/management/management",
+			"style": {
+				"navigationBarTitleText": "用户管理"
+			}
+		},
+		{
+			"path": "pages/production/plans/plans",
+			"style": {
+				"navigationBarTitleText": "最近订单"
+			}
+		},
+		{
+			"path": "pages/production/record/record",
+			"style": {
+				"navigationBarTitleText": "生产记录"
+			}
+		},
+		{
+			"path": "pages/production/report/report",
+			"style": {
+				"navigationBarTitleText": "生产报表"
+			}
+		}
+	],
+	"globalStyle": {
+		"pageOrientation": "portrait",
+		"navigationBarTitleText": "生产管理系统",
+		"navigationBarTextStyle": "black",
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"navigationBarTitleTextStyle": "black",
+		"backgroundColor": "#f5f7fa",
+		"backgroundColorTop": "#f5f7fa",
+		"backgroundColorBottom": "#f5f7fa"
+	},
+	"easycom": {
+		"autoscan": true
+	},
+	"tabBar": {
+		"color": "#95a5a6",
+		"selectedColor": "#c9a962",
+		"backgroundColor": "#ffffff",
+		"borderStyle": "white",
+		"list": [
+			{
+				"pagePath": "pages/production/home/home",
+				"text": "首页",
+				"iconPath": "static/home.png",
+				"selectedIconPath": "static/home-active.png"
+			},
+			{
+       			"pagePath": "pages/production/report/report",
+       			"text": "生产报表",
+       			"iconPath": "static/templateHL.png",
+       			"selectedIconPath": "static/templateHL.png"
+     		},
+			{
+				"pagePath": "pages/production/profile/profile",
+				"text": "个人中心",
+				"iconPath": "static/logo.png",
+				"selectedIconPath": "static/logo.png"
+			}
+		]
+	}
+}	

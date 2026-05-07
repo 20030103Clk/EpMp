@@ -1,0 +1,198 @@
+
+.container.data-v-74f94787 {
+	padding: 20rpx;
+	background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 50%, #d4d8dc 100%);
+	min-height: 100vh;
+	position: relative;
+}
+.particles.data-v-74f94787 {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	z-index: 1;
+}
+.particle.data-v-74f94787 {
+	position: absolute;
+	border-radius: 50%;
+	opacity: 0.4;
+	animation: float-74f94787 linear infinite;
+}
+@keyframes float-74f94787 {
+0% {
+		transform: translateY(100vh) rotate(0deg);
+		opacity: 0;
+}
+10% {
+		opacity: 0.4;
+}
+90% {
+		opacity: 0.4;
+}
+100% {
+		transform: translateY(-10vh) rotate(360deg);
+		opacity: 0;
+}
+}
+.header.data-v-74f94787 {
+	background: rgba(255, 255, 255, 0.85);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	border-radius: 20rpx;
+	padding: 24rpx;
+	margin-bottom: 24rpx;
+	box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+	border: 1rpx solid rgba(255, 255, 255, 0.6);
+	position: relative;
+	z-index: 10;
+}
+.header-content.data-v-74f94787 {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.title-section.data-v-74f94787 {
+	display: flex;
+	flex-direction: column;
+}
+.title.data-v-74f94787 {
+	font-size: 36rpx;
+	font-weight: 700;
+	color: #2c3e50;
+}
+.subtitle.data-v-74f94787 {
+	font-size: 20rpx;
+	color: #95a5a6;
+	letter-spacing: 1rpx;
+	margin-top: 4rpx;
+}
+.user-section.data-v-74f94787 {
+	background: rgba(255, 255, 255, 0.85);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	border-radius: 20rpx;
+	padding: 24rpx;
+	box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
+	border: 1rpx solid rgba(255, 255, 255, 0.6);
+	position: relative;
+	z-index: 10;
+}
+.section-header.data-v-74f94787 {
+	margin-bottom: 20rpx;
+}
+.section-title.data-v-74f94787 {
+	font-size: 32rpx;
+	font-weight: 600;
+	color: #2c3e50;
+}
+.user-list.data-v-74f94787 {
+	display: flex;
+	flex-direction: column;
+	gap: 16rpx;
+}
+.user-item.data-v-74f94787 {
+	background: rgba(248, 249, 250, 0.9);
+	border-radius: 16rpx;
+	padding: 20rpx;
+	border: 1rpx solid rgba(201, 169, 98, 0.1);
+	transition: all 0.3s ease;
+}
+.user-item.data-v-74f94787:active {
+	background: rgba(201, 169, 98, 0.08);
+}
+.user-info.data-v-74f94787 {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16rpx;
+	padding-bottom: 16rpx;
+	border-bottom: 1rpx solid rgba(201, 169, 98, 0.1);
+}
+.user-name.data-v-74f94787 {
+	font-size: 28rpx;
+	font-weight: 600;
+	color: #2c3e50;
+}
+.user-level.data-v-74f94787 {
+	font-size: 24rpx;
+	padding: 6rpx 16rpx;
+	border-radius: 20rpx;
+	font-weight: 500;
+}
+.user-level.admin.data-v-74f94787 {
+	background: rgba(76, 217, 100, 0.15);
+	color: #4cd964;
+}
+.user-level.normal.data-v-74f94787 {
+	background: rgba(201, 169, 98, 0.15);
+	color: #c9a962;
+}
+.user-actions.data-v-74f94787 {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 16rpx;
+}
+.level-selector.data-v-74f94787 {
+	display: flex;
+	align-items: center;
+	gap: 16rpx;
+}
+.selector-label.data-v-74f94787 {
+	font-size: 26rpx;
+	color: #6c757d;
+	font-weight: 500;
+}
+.radio-group.data-v-74f94787 {
+	display: flex;
+	gap: 30rpx;
+}
+.radio-item.data-v-74f94787 {
+	display: flex;
+	align-items: center;
+	gap: 10rpx;
+	font-size: 26rpx;
+	color: #2c3e50;
+}
+.delete-btn.data-v-74f94787 {
+	padding: 12rpx 28rpx;
+	background: rgba(255, 77, 79, 0.9);
+	color: #fff;
+	border: none;
+	border-radius: 12rpx;
+	font-size: 26rpx;
+	box-shadow: 0 4rpx 12rpx rgba(255, 77, 79, 0.3);
+	transition: all 0.3s ease;
+}
+.delete-btn.data-v-74f94787:active {
+	transform: scale(0.96);
+}
+.empty-tip.data-v-74f94787 {
+	text-align: center;
+	padding: 60rpx 0;
+	color: #95a5a6;
+	font-size: 28rpx;
+}
+.no-permission.data-v-74f94787 {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 120rpx 40rpx;
+	position: relative;
+	z-index: 10;
+}
+.no-permission-text.data-v-74f94787 {
+	font-size: 32rpx;
+	color: #ff6b6b;
+	font-weight: 600;
+	margin-bottom: 20rpx;
+}
+.no-permission-hint.data-v-74f94787 {
+	font-size: 28rpx;
+	color: #95a5a6;
+}
+

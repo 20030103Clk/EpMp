@@ -1,0 +1,58 @@
+{
+  "pages": [
+    "pages/production/splash/splash",
+    "pages/production/login/login",
+    "pages/production/home/home",
+    "pages/production/plan/plan",
+    "pages/production/execution/execution",
+    "pages/production/profile/profile",
+    "pages/production/quality/quality",
+    "pages/production/inventory/inventory",
+    "pages/production/management/management",
+    "pages/production/plans/plans",
+    "pages/production/record/record",
+    "pages/production/report/report"
+  ],
+  "window": {
+    "pageOrientation": "portrait",
+    "navigationBarTitleText": "生产管理系统",
+    "navigationBarTextStyle": "black",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "navigationBarTitleTextStyle": "black",
+    "backgroundColor": "#f5f7fa",
+    "backgroundColorTop": "#f5f7fa",
+    "backgroundColorBottom": "#f5f7fa"
+  },
+  "tabBar": {
+    "color": "#95a5a6",
+    "selectedColor": "#c9a962",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/production/home/home",
+        "text": "首页",
+        "iconPath": "static/home.png",
+        "selectedIconPath": "static/home-active.png"
+      },
+      {
+        "pagePath": "pages/production/report/report",
+        "text": "生产报表",
+        "iconPath": "static/templateHL.png",
+        "selectedIconPath": "static/templateHL.png"
+      },
+      {
+        "pagePath": "pages/production/profile/profile",
+        "text": "个人中心",
+        "iconPath": "static/logo.png",
+        "selectedIconPath": "static/logo.png"
+      }
+    ]
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "演示定位能力"
+    }
+  },
+  "usingComponents": {}
+}
