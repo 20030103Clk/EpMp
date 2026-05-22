@@ -1,50 +1,23 @@
 "use strict";
 const common_vendor = require("../../../common/vendor.js");
-const API_BASE_URL = "http://localhost:3000/api";
-const api = {
-  statistics: {
-    getStatistics: async () => {
-      try {
-        const response = await common_vendor.index.request({
-          url: `${API_BASE_URL}/statistics`,
-          method: "GET"
-        });
-        common_vendor.index.__f__("log", "at pages/production/report/report.vue:81", "Get statistics API response:", response);
-        if (response && (response[1] || response.data)) {
-          if (response[1]) {
-            return response[1].data.data;
-          } else if (response.data) {
-            return response.data.data;
-          }
-        }
-        throw new Error("Invalid response from server");
-      } catch (error) {
-        common_vendor.index.__f__("error", "at pages/production/report/report.vue:91", "Get statistics error:", error);
-        throw error;
+const formatDateLabel = (dateStr) => {
+  if (!dateStr)
+    return "";
+  try {
+    if (dateStr.includes("T")) {
+      const date = new Date(dateStr);
+      const day = date.getDate();
+      return `${day}日`;
+    } else if (dateStr.includes("-")) {
+      const parts = dateStr.split("-");
+      if (parts.length >= 3) {
+        return `${parts[2]}日`;
       }
     }
-  },
-  record: {
-    getRecords: async (params = {}) => {
-      try {
-        const queryString = Object.keys(params).map((key) => `${key}=${params[key]}`).join("&");
-        const response = await common_vendor.index.request({
-          url: `${API_BASE_URL}/record${queryString ? `?${queryString}` : ""}`,
-          method: "GET"
-        });
-        if (response && (response[1] || response.data)) {
-          if (response[1]) {
-            return response[1].data;
-          } else if (response.data) {
-            return response.data;
-          }
-        }
-        throw new Error("Invalid response from server");
-      } catch (error) {
-        common_vendor.index.__f__("error", "at pages/production/report/report.vue:113", "Get records error:", error);
-        throw error;
-      }
-    }
+    return dateStr;
+  } catch (error) {
+    common_vendor.index.__f__("error", "at pages/production/report/report.vue:87", "Date format error:", error);
+    return dateStr;
   }
 };
 const _sfc_main = {
@@ -79,42 +52,38 @@ const _sfc_main = {
       common_vendor.index.navigateBack();
     },
     loadData() {
-      common_vendor.index.showLoading({ title: "加载数据..." });
-      api.statistics.getStatistics().then((data) => {
-        common_vendor.index.hideLoading();
-        this.updateCharts(data);
-      }).catch((error) => {
-        common_vendor.index.hideLoading();
-        common_vendor.index.showToast({ title: "加载失败，使用模拟数据", icon: "none" });
-        this.loadMockData();
-      });
-      api.record.getRecords().then((res) => {
-        if (res.success) {
-          const total = res.data.list.reduce((sum, record) => sum + (record.output || 0), 0);
-          this.totalOutput = total;
-        }
-      }).catch(() => {
-      });
+      this.loadMockData();
     },
     loadMockData() {
-      this.totalOutput = 1250;
-      this.avgPassRate = 95.5;
+      this.totalOutput = 890;
+      this.avgPassRate = 86.19;
       this.totalDevices = 11;
       this.deviceRunning = 8;
       this.deviceIdle = 2;
       this.deviceFault = 1;
-      this.yieldData = [
-        { date: "1日", output: 120, percent: 60 },
-        { date: "2日", output: 150, percent: 75 },
-        { date: "3日", output: 130, percent: 65 },
-        { date: "4日", output: 180, percent: 90 },
-        { date: "5日", output: 160, percent: 80 }
+      const mockYieldData = [
+        { date: "18日", output: 120 },
+        { date: "19日", output: 200 },
+        { date: "20日", output: 150 },
+        { date: "21日", output: 180 },
+        { date: "22日", output: 240 }
       ];
+      const maxOutput = Math.max(...mockYieldData.map((item) => item.output));
+      common_vendor.index.__f__("log", "at pages/production/report/report.vue:188", "maxOutput:", maxOutput);
+      this.yieldData = mockYieldData.map((item) => {
+        const percent = item.output / maxOutput * 100;
+        common_vendor.index.__f__("log", "at pages/production/report/report.vue:192", `日期: ${item.date}, 产量: ${item.output}, 百分比: ${percent}%`);
+        return {
+          date: item.date,
+          output: item.output,
+          percent
+        };
+      });
+      common_vendor.index.__f__("log", "at pages/production/report/report.vue:200", "yieldData:", JSON.stringify(this.yieldData));
       this.qualityData = [
-        { product: "产品A", rate: 98 },
-        { product: "产品B", rate: 95 },
-        { product: "产品C", rate: 92 },
-        { product: "产品D", rate: 96 }
+        { product: "不锈钢组件", rate: 90 },
+        { product: "装配件", rate: 90 },
+        { product: "茶", rate: 78.57 }
       ];
     },
     updateCharts(data) {
@@ -128,20 +97,19 @@ const _sfc_main = {
         this.deviceFault = fault ? fault.count : 1;
       }
       if (data.yieldData && data.yieldData.length > 0) {
-        const maxOutput = Math.max(...data.yieldData.map((item) => item.output));
-        this.yieldData = data.yieldData.map((item) => ({
-          date: item.date ? item.date.substring(5) : "",
-          output: item.output,
-          percent: maxOutput > 0 ? item.output / maxOutput * 100 : 0
-        }));
+        const outputs = data.yieldData.map((item) => item.output || 0);
+        const maxOutput = Math.max(...outputs);
+        if (maxOutput > 0) {
+          this.yieldData = data.yieldData.map((item) => ({
+            date: formatDateLabel(item.date),
+            output: item.output || 0,
+            percent: item.output / maxOutput * 100
+          }));
+        } else {
+          this.loadDefaultYieldData();
+        }
       } else {
-        this.yieldData = [
-          { date: "1日", output: 120, percent: 60 },
-          { date: "2日", output: 150, percent: 75 },
-          { date: "3日", output: 130, percent: 65 },
-          { date: "4日", output: 180, percent: 90 },
-          { date: "5日", output: 160, percent: 80 }
-        ];
+        this.loadDefaultYieldData();
       }
       if (data.qualityData && data.qualityData.length > 0) {
         this.qualityData = data.qualityData.map((item) => ({
@@ -152,35 +120,30 @@ const _sfc_main = {
         this.avgPassRate = Math.round(totalRate / this.qualityData.length * 100) / 100;
       } else {
         this.qualityData = [
-          { product: "产品A", rate: 98 },
-          { product: "产品B", rate: 95 },
-          { product: "产品C", rate: 92 },
-          { product: "产品D", rate: 96 }
+          { product: "不锈钢组件", rate: 90 },
+          { product: "装配件", rate: 90 },
+          { product: "茶", rate: 78.57 }
         ];
-        this.avgPassRate = 95.25;
+        this.avgPassRate = 86.19;
       }
+    },
+    loadDefaultYieldData() {
+      this.yieldData = [
+        { date: "1日", output: 120, percent: 60 },
+        { date: "2日", output: 150, percent: 75 },
+        { date: "3日", output: 130, percent: 65 },
+        { date: "4日", output: 180, percent: 90 },
+        { date: "5日", output: 160, percent: 80 }
+      ];
     }
   }
 };
-if (!Array) {
-  const _easycom_uni_icons2 = common_vendor.resolveComponent("uni-icons");
-  _easycom_uni_icons2();
-}
-const _easycom_uni_icons = () => "../../../uni_modules/uni-icons/components/uni-icons/uni-icons.js";
-if (!Math) {
-  _easycom_uni_icons();
-}
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return {
-    a: common_vendor.p({
-      type: "arrow-left",
-      size: "28"
-    }),
-    b: common_vendor.o((...args) => $options.goBack && $options.goBack(...args), "a6"),
-    c: common_vendor.t($data.totalOutput),
-    d: common_vendor.t($data.avgPassRate),
-    e: common_vendor.t($data.totalDevices),
-    f: common_vendor.f($data.yieldData, (item, index, i0) => {
+    a: common_vendor.t($data.totalOutput),
+    b: common_vendor.t($data.avgPassRate),
+    c: common_vendor.t($data.totalDevices),
+    d: common_vendor.f($data.yieldData, (item, index, i0) => {
       return {
         a: item.percent + "%",
         b: common_vendor.t(item.date),
@@ -188,7 +151,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         d: index
       };
     }),
-    g: common_vendor.f($data.qualityData, (item, index, i0) => {
+    e: common_vendor.f($data.qualityData, (item, index, i0) => {
       return {
         a: common_vendor.t(item.product),
         b: item.rate + "%",
@@ -196,9 +159,9 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         d: index
       };
     }),
-    h: common_vendor.t($data.deviceRunning),
-    i: common_vendor.t($data.deviceIdle),
-    j: common_vendor.t($data.deviceFault)
+    f: common_vendor.t($data.deviceRunning),
+    g: common_vendor.t($data.deviceIdle),
+    h: common_vendor.t($data.deviceFault)
   };
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-5f1c47b3"]]);

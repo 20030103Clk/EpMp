@@ -10,7 +10,7 @@ const api = {
           url: `${API_BASE_URL}/plan${queryString ? `?${queryString}` : ""}`,
           method: "GET"
         });
-        common_vendor.index.__f__("log", "at pages/production/home/home.vue:250", "Get plans API response:", response);
+        common_vendor.index.__f__("log", "at pages/production/home/home.vue:256", "Get plans API response:", response);
         if (response && (response[1] || response.data)) {
           if (response[1]) {
             return response[1].data;
@@ -20,7 +20,7 @@ const api = {
         }
         throw new Error("Invalid response from server");
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/production/home/home.vue:262", "Get plans error:", error);
+        common_vendor.index.__f__("error", "at pages/production/home/home.vue:268", "Get plans error:", error);
         throw error;
       }
     }
@@ -33,7 +33,7 @@ const api = {
           url: `${API_BASE_URL}/record${queryString ? `?${queryString}` : ""}`,
           method: "GET"
         });
-        common_vendor.index.__f__("log", "at pages/production/home/home.vue:276", "Get records API response:", response);
+        common_vendor.index.__f__("log", "at pages/production/home/home.vue:282", "Get records API response:", response);
         if (response && (response[1] || response.data)) {
           if (response[1]) {
             return response[1].data;
@@ -43,7 +43,7 @@ const api = {
         }
         throw new Error("Invalid response from server");
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/production/home/home.vue:288", "Get records error:", error);
+        common_vendor.index.__f__("error", "at pages/production/home/home.vue:294", "Get records error:", error);
         throw error;
       }
     }
@@ -223,10 +223,16 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       size: "40"
     }),
     t: common_vendor.o(($event) => $options.navigateTo("management"), "07"),
-    v: common_vendor.o(($event) => $options.navigateTo("plan"), "e3"),
-    w: common_vendor.f($data.recentOrders, (order, index, i0) => {
+    v: common_vendor.p({
+      ["custom-prefix"]: "iconfont",
+      type: "settings",
+      size: "40"
+    }),
+    w: common_vendor.o(($event) => $options.navigateTo("equipment"), "88"),
+    x: common_vendor.o(($event) => $options.navigateTo("plan"), "51"),
+    y: common_vendor.f($data.recentOrders, (order, index, i0) => {
       return {
-        a: "f60c7ad9-10-" + i0,
+        a: "f60c7ad9-11-" + i0,
         b: common_vendor.t(order.id),
         c: common_vendor.t(order.statusText),
         d: common_vendor.n(order.status),
@@ -235,60 +241,60 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         g: index
       };
     }),
-    x: common_vendor.p({
+    z: common_vendor.p({
       type: "file-text",
       size: "20"
     })
   } : {
-    y: common_vendor.t($options.username),
-    z: common_vendor.t($options.currentDate),
-    A: common_vendor.t($options.username.charAt(0)),
-    B: common_vendor.p({
+    A: common_vendor.t($options.username),
+    B: common_vendor.t($options.currentDate),
+    C: common_vendor.t($options.username.charAt(0)),
+    D: common_vendor.p({
       type: "trending-up",
       size: "48"
     }),
-    C: common_vendor.p({
+    E: common_vendor.p({
       ["custom-prefix"]: "iconfont",
       type: "calendar-filled",
       size: "36"
     }),
-    D: common_vendor.p({
+    F: common_vendor.p({
       type: "chevron-right",
       size: "32"
     }),
-    E: common_vendor.o(($event) => $options.navigateTo("plan"), "80"),
-    F: common_vendor.p({
+    G: common_vendor.o(($event) => $options.navigateTo("plan"), "fc"),
+    H: common_vendor.p({
       ["custom-prefix"]: "iconfont",
       type: "spinner-cycle",
       size: "36"
     }),
-    G: common_vendor.p({
+    I: common_vendor.p({
       type: "chevron-right",
       size: "32"
     }),
-    H: common_vendor.o(($event) => $options.navigateTo("execution"), "10"),
-    I: common_vendor.p({
+    J: common_vendor.o(($event) => $options.navigateTo("execution"), "0d"),
+    K: common_vendor.p({
       ["custom-prefix"]: "iconfont",
       type: "arrow-up",
       size: "32"
     }),
-    J: common_vendor.p({
+    L: common_vendor.p({
       type: "chevron-right",
       size: "28"
     }),
-    K: common_vendor.o(($event) => $options.navigateTo("quality"), "93"),
-    L: common_vendor.p({
+    M: common_vendor.o(($event) => $options.navigateTo("quality"), "ca"),
+    N: common_vendor.p({
       ["custom-prefix"]: "iconfont",
       type: "more-filled",
       size: "32"
     }),
-    M: common_vendor.p({
+    O: common_vendor.p({
       type: "chevron-right",
       size: "28"
     }),
-    N: common_vendor.o(($event) => $options.navigateTo("record"), "25"),
-    O: common_vendor.o(($event) => $options.navigateTo("plan"), "b3"),
-    P: common_vendor.f($data.recentOrders, (order, index, i0) => {
+    P: common_vendor.o(($event) => $options.navigateTo("record"), "e1"),
+    Q: common_vendor.o(($event) => $options.navigateTo("plan"), "98"),
+    R: common_vendor.f($data.recentOrders, (order, index, i0) => {
       return {
         a: common_vendor.t(order.product),
         b: common_vendor.t(order.id),

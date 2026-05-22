@@ -121,6 +121,15 @@ const formatDate = (date) => {
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
+const formatDateTime = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
 const _sfc_main = {
   name: "ExecutionPage",
   computed: {
@@ -181,7 +190,7 @@ const _sfc_main = {
     // 加载设备列表
     loadDevices() {
       api.equipment.getEquipments().then((res) => {
-        common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:366", "设备列表响应:", res);
+        common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:377", "设备列表响应:", res);
         if (res && res.success && res.data && res.data.list) {
           this.devices = res.data.list.map((equip) => ({
             id: equip.equioment_id,
@@ -190,16 +199,16 @@ const _sfc_main = {
             statusText: equip.status,
             params: equip.statusText || "正常运行"
           }));
-          common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:375", "设备列表已加载:", this.devices);
+          common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:386", "设备列表已加载:", this.devices);
         }
       }).catch((error) => {
-        common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:378", "加载设备列表失败:", error);
+        common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:389", "加载设备列表失败:", error);
       });
     },
     // 加载生产计划
     loadProductionPlans() {
       api.plan.getPlans().then((res) => {
-        common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:385", "生产计划响应:", res);
+        common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:396", "生产计划响应:", res);
         if (res && res.success && res.data && res.data.list) {
           this.productionTasks = res.data.list.map((plan) => ({
             id: plan.plan_id,
@@ -209,11 +218,11 @@ const _sfc_main = {
             status: plan.status,
             statusText: plan.statusText
           }));
-          common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:395", "生产计划已加载:", this.productionTasks);
+          common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:406", "生产计划已加载:", this.productionTasks);
           this.calculateRealtimeData();
         }
       }).catch((error) => {
-        common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:400", "加载生产计划失败:", error);
+        common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:411", "加载生产计划失败:", error);
       });
     },
     // 设备选择变更
@@ -274,21 +283,32 @@ const _sfc_main = {
         md: this.outputForm.remark
       }).then((res) => {
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:477", "创建记录响应:", JSON.stringify(res));
+        common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:488", "创建记录响应:", JSON.stringify(res));
         if (res && res.success && res.data && res.data.insertId) {
           const recordId = res.data.insertId;
-          common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:481", "创建质检记录，record_id:", recordId);
+          common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:492", "创建质检记录，record_id:", recordId);
+          const productName = this.selectedTask.name || "未知产品";
+          const qty = this.outputForm.quantity || 0;
+          const rejectQty = this.outputForm.rejectQuantity || 0;
+          common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:498", "质检记录数据:", {
+            record_id: recordId,
+            product: productName,
+            quantity: qty,
+            qual: qualified,
+            unqual: rejectQty,
+            inspection_time: formatDateTime(/* @__PURE__ */ new Date())
+          });
           api.quality.createQuality({
             record_id: recordId,
-            product: this.selectedTask.name,
-            quantity: this.outputForm.quantity,
+            product: productName,
+            quantity: qty,
             qual: qualified,
-            unqual: this.outputForm.rejectQuantity,
-            inspection_time: formatDate(/* @__PURE__ */ new Date())
+            unqual: rejectQty,
+            inspection_time: formatDateTime(/* @__PURE__ */ new Date())
           }).then((qualityRes) => {
-            common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:490", "创建质检记录响应:", JSON.stringify(qualityRes));
+            common_vendor.index.__f__("log", "at pages/production/execution/execution.vue:515", "创建质检记录响应:", JSON.stringify(qualityRes));
           }).catch((qualityError) => {
-            common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:492", "创建质检记录失败:", qualityError);
+            common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:517", "创建质检记录失败:", qualityError);
           });
           const taskIndex = this.productionTasks.findIndex((t) => t.id === this.selectedTask.id);
           if (taskIndex !== -1) {
@@ -308,7 +328,7 @@ const _sfc_main = {
               status: newStatus,
               statusText: newStatusText
             }).catch((error) => {
-              common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:523", "更新计划失败:", error);
+              common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:548", "更新计划失败:", error);
             });
             this.productionTasks[taskIndex].status = newStatus;
             this.productionTasks[taskIndex].statusText = newStatusText;
@@ -322,7 +342,7 @@ const _sfc_main = {
         }
       }).catch((error) => {
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:545", "提交产量上报失败:", error);
+        common_vendor.index.__f__("error", "at pages/production/execution/execution.vue:570", "提交产量上报失败:", error);
         common_vendor.index.showToast({ title: "提交失败", icon: "none" });
       });
     },

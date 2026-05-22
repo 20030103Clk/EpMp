@@ -299,6 +299,17 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
+// 格式化日期时间为 YYYY-MM-DD HH:MM:SS 格式
+const formatDateTime = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
 export default {
 	name: 'ExecutionPage',
 	computed: {
@@ -479,13 +490,27 @@ export default {
 					// 创建质检记录
 					const recordId = res.data.insertId;
 					console.log('创建质检记录，record_id:', recordId);
+					
+					const productName = this.selectedTask.name || '未知产品';
+					const qty = this.outputForm.quantity || 0;
+					const rejectQty = this.outputForm.rejectQuantity || 0;
+					
+					console.log('质检记录数据:', {
+						record_id: recordId,
+						product: productName,
+						quantity: qty,
+						qual: qualified,
+						unqual: rejectQty,
+						inspection_time: formatDateTime(new Date())
+					});
+					
 					api.quality.createQuality({
 						record_id: recordId,
-						product: this.selectedTask.name,
-						quantity: this.outputForm.quantity,
+						product: productName,
+						quantity: qty,
 						qual: qualified,
-						unqual: this.outputForm.rejectQuantity,
-						inspection_time: formatDate(new Date())
+						unqual: rejectQty,
+						inspection_time: formatDateTime(new Date())
 					}).then(qualityRes => {
 						console.log('创建质检记录响应:', JSON.stringify(qualityRes));
 					}).catch(qualityError => {

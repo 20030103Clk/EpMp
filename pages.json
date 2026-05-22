@@ -72,6 +72,12 @@
 			"style": {
 				"navigationBarTitleText": "生产报表"
 			}
+		},
+		{
+			"path": "pages/production/equipment/equipment",
+			"style": {
+				"navigationBarTitleText": "设备管理"
+			}
 		}
 	],
 	"globalStyle": {

@@ -7507,7 +7507,7 @@ function isConsoleWritable() {
 function initRuntimeSocketService() {
   const hosts = "192.168.134.1,192.168.220.1,172.16.193.228,127.0.0.1";
   const port = "8090";
-  const id = "mp-weixin_E2Vmlh";
+  const id = "mp-weixin_n0WSZR";
   const lazy = typeof swan !== "undefined";
   let restoreError = lazy ? () => {
   } : initOnError();
@@ -10245,6 +10245,12 @@ const pages = [
     path: "pages/production/report/report",
     style: {
       navigationBarTitleText: "生产报表"
+    }
+  },
+  {
+    path: "pages/production/equipment/equipment",
+    style: {
+      navigationBarTitleText: "设备管理"
     }
   }
 ];
@@ -13283,7 +13289,7 @@ let yr = new class {
 })();
 var _r = yr;
 var define_process_env_UNI_STATISTICS_CONFIG_default = { version: "2", enable: true };
-var define_process_env_UNI_STAT_TITLE_JSON_default = { "pages/production/login/login": "登录", "pages/production/home/home": "生产管理首页", "pages/production/home-user/home-user": "首页", "pages/production/plan/plan": "生产计划", "pages/production/execution/execution": "工序进度", "pages/production/profile/profile": "个人中心", "pages/production/quality/quality": "质量检验登记", "pages/production/inventory/inventory": "库存管理", "pages/production/management/management": "用户管理", "pages/production/plans/plans": "最近订单", "pages/production/record/record": "生产记录", "pages/production/report/report": "生产报表" };
+var define_process_env_UNI_STAT_TITLE_JSON_default = { "pages/production/login/login": "登录", "pages/production/home/home": "生产管理首页", "pages/production/plan/plan": "生产计划", "pages/production/execution/execution": "工序进度", "pages/production/profile/profile": "个人中心", "pages/production/quality/quality": "质量检验登记", "pages/production/inventory/inventory": "库存管理", "pages/production/management/management": "用户管理", "pages/production/plans/plans": "最近订单", "pages/production/record/record": "生产记录", "pages/production/report/report": "生产报表", "pages/production/equipment/equipment": "设备管理" };
 var define_process_env_UNI_STAT_UNI_CLOUD_default = {};
 const sys = index$1.getSystemInfoSync();
 const STAT_VERSION = "5.07";

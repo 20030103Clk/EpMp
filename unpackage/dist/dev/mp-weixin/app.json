@@ -11,7 +11,8 @@
     "pages/production/management/management",
     "pages/production/plans/plans",
     "pages/production/record/record",
-    "pages/production/report/report"
+    "pages/production/report/report",
+    "pages/production/equipment/equipment"
   ],
   "window": {
     "pageOrientation": "portrait",

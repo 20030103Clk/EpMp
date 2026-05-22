@@ -105,6 +105,12 @@
 						</view>
 						<text class="menu-text">用户管理</text>
 					</view>
+					<view class="menu-item" @click="navigateTo('equipment')">
+						<view class="menu-icon-wrapper equipment">
+							<uni-icons custom-prefix="iconfont" type="settings" size="40" class="menu-icon"></uni-icons>
+						</view>
+						<text class="menu-text">设备管理</text>
+					</view>
 				</view>
 			</view>
 			
@@ -1026,6 +1032,10 @@ export default {
 	background: linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(100, 181, 246, 0.15) 100%);
 }
 
+.menu-icon-wrapper.equipment {
+	background: linear-gradient(135deg, rgba(88, 86, 214, 0.15) 0%, rgba(111, 97, 255, 0.15) 100%);
+}
+
 .menu-icon {
 	color: #6c757d;
 }
@@ -1035,6 +1045,7 @@ export default {
 .menu-icon-wrapper.record .menu-icon { color: #af52de; }
 .menu-icon-wrapper.inventory .menu-icon { color: #ff2d55; }
 .menu-icon-wrapper.management .menu-icon { color: #007aff; }
+.menu-icon-wrapper.equipment .menu-icon { color: #5856d6; }
 
 .menu-text {
 	font-size: 26rpx;

@@ -540,6 +540,9 @@
 .menu-icon-wrapper.management.data-v-f60c7ad9 {
 	background: linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(100, 181, 246, 0.15) 100%);
 }
+.menu-icon-wrapper.equipment.data-v-f60c7ad9 {
+	background: linear-gradient(135deg, rgba(88, 86, 214, 0.15) 0%, rgba(111, 97, 255, 0.15) 100%);
+}
 .menu-icon.data-v-f60c7ad9 {
 	color: #6c757d;
 }
@@ -552,6 +555,8 @@
 .menu-icon-wrapper.inventory .menu-icon.data-v-f60c7ad9 { color: #ff2d55;
 }
 .menu-icon-wrapper.management .menu-icon.data-v-f60c7ad9 { color: #007aff;
+}
+.menu-icon-wrapper.equipment .menu-icon.data-v-f60c7ad9 { color: #5856d6;
 }
 .menu-text.data-v-f60c7ad9 {
 	font-size: 26rpx;

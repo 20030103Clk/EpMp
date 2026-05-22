@@ -87,7 +87,7 @@
   width: 60rpx;
   background: linear-gradient(to top, #007AFF, #5ac8fa);
   border-radius: 8rpx 8rpx 0 0;
-  min-height: 20rpx;
+  min-height: 4rpx;
   transition: height 0.3s;
 }
 .bar-label.data-v-5f1c47b3 {
